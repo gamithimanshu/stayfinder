@@ -1,5 +1,7 @@
+const toArray = (value) => (Array.isArray(value) ? value.filter(Boolean) : []);
+
 export function extractCity(location = "") {
-  const parts = location.split(",").map((part) => part.trim()).filter(Boolean);
+  const parts = String(location ?? "").split(",").map((part) => part.trim()).filter(Boolean);
   return parts.at(-1) ?? "";
 }
 
@@ -30,20 +32,28 @@ export function getReviewStats(reviews = []) {
   };
 }
 
+export const FALLBACK_PG_IMAGE = "/fallback-pg.svg";
+
 export function normalizeListing(listing = {}) {
   const title = listing.title ?? listing.name ?? "Untitled PG";
-  const images = Array.isArray(listing.images) && listing.images.length > 0
-    ? listing.images.filter(Boolean)
+  const images = toArray(listing.images).length > 0
+    ? toArray(listing.images)
     : [listing.image ?? listing.imageUrl ?? listing.thumbnail ?? ""].filter(Boolean);
   const location =
     listing.location ||
     listing.address ||
     [listing.area, listing.city].filter(Boolean).join(", ") ||
     "";
-  const reviews = Array.isArray(listing.reviews) && listing.reviews.length > 0
-    ? listing.reviews
-    : [];
+  const reviews = toArray(listing.reviews);
   const { averageRating, reviewCount } = getReviewStats(reviews);
+  const primaryImage = listing.image ?? listing.imageUrl ?? listing.thumbnail ?? images[0] ?? "";
+  const safeImage = primaryImage || FALLBACK_PG_IMAGE;
+  const safeImages = images.length ? images : [safeImage];
+  const amenities = Array.isArray(listing.amenities)
+    ? listing.amenities.map((item) => String(item ?? "").trim()).filter(Boolean)
+    : typeof listing.amenities === "string"
+      ? listing.amenities.split(",").map((item) => item.trim()).filter(Boolean)
+      : [];
 
   return {
     id: listing.id ?? listing._id ?? "",
@@ -51,12 +61,10 @@ export function normalizeListing(listing = {}) {
     price: Number(listing.price ?? listing.rent ?? listing.monthlyRent ?? 0),
     location,
     city: listing.city ?? extractCity(location) ?? "",
-    gender: (listing.gender ?? listing.category ?? "unisex").toLowerCase(),
-    image: listing.image ?? listing.imageUrl ?? listing.thumbnail ?? images[0] ?? "",
-    images,
-    amenities: Array.isArray(listing.amenities) && listing.amenities.length > 0
-      ? listing.amenities
-      : [],
+    gender: String(listing.gender ?? listing.category ?? "unisex").toLowerCase(),
+    image: safeImage,
+    images: safeImages,
+    amenities,
     description: listing.description ?? listing.details ?? "",
     roomType: listing.roomType ?? "",
     totalRooms: Number(listing.totalRooms ?? 0),

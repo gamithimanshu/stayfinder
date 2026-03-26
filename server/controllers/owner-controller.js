@@ -1,7 +1,9 @@
 const Booking = require("../models/booking-model");
+const Payment = require("../models/payment-model");
 const Pg = require("../models/pg-model");
 const Review = require("../models/review-model");
 const Wishlist = require("../models/wishlist-model");
+const { getOwnerDashboardAnalytics, getRecentBookings } = require("../utils/dashboard-analytics");
 
 const normalizeGender = (value) => {
   const normalized = String(value || "").trim().toLowerCase();
@@ -57,34 +59,8 @@ const buildPgPayload = (body, ownerId) => {
 
 const getOwnerDashboard = async (req, res, next) => {
   try {
-    const ownerId = req.userId;
-
-    const [pgs, bookings] = await Promise.all([
-      Pg.find({ ownerId }).sort({ createdAt: -1 }),
-      Booking.find()
-        .populate({
-          path: "pgId",
-          match: { ownerId },
-          select: "title city area address price availableRooms",
-        })
-        .populate("userId", "name email phone role isAdmin")
-        .sort({ createdAt: -1 }),
-    ]);
-
-    const filteredBookings = bookings.filter((booking) => booking.pg);
-    const totalRooms = pgs.reduce((sum, pg) => sum + (pg.availableRooms ?? 0), 0);
-
-    return res.status(200).json({
-      stats: {
-        totalPgs: pgs.length,
-        totalBookings: filteredBookings.length,
-        totalAvailableRooms: totalRooms,
-        pendingPgs: pgs.filter((pg) => !pg.isApproved).length,
-        approvedPgs: pgs.filter((pg) => pg.isApproved).length,
-      },
-      recentPgs: pgs.slice(0, 4),
-      recentBookings: filteredBookings.slice(0, 6),
-    });
+    const dashboard = await getOwnerDashboardAnalytics(req.userId);
+    return res.status(200).json(dashboard);
   } catch (error) {
     return next(error);
   }
@@ -152,7 +128,11 @@ const deleteOwnerPg = async (req, res, next) => {
       return res.status(404).json({ message: "PG not found" });
     }
 
+    const bookingIds = await Booking.find({ pgId: pg._id }).distinct("_id");
     await Booking.deleteMany({ pgId: pg._id });
+    if (bookingIds.length) {
+      await Payment.deleteMany({ bookingId: { $in: bookingIds } });
+    }
     await Wishlist.deleteMany({ pgId: pg._id });
     await Review.deleteMany({ pgId: pg._id });
 
@@ -167,17 +147,9 @@ const deleteOwnerPg = async (req, res, next) => {
 
 const getOwnerBookings = async (req, res, next) => {
   try {
-    const bookings = await Booking.find()
-      .populate({
-        path: "pgId",
-        match: { ownerId: req.userId },
-        select: "title city area address price",
-      })
-      .populate("userId", "name email phone role isAdmin")
-      .sort({ createdAt: -1 });
-
+    const bookings = await getRecentBookings(req.userId, null);
     return res.status(200).json({
-      bookings: bookings.filter((booking) => booking.pg),
+      bookings,
     });
   } catch (error) {
     return next(error);

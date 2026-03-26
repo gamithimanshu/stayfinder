@@ -108,10 +108,41 @@ export function Wishlist() {
           actions={<div className="badge-soft"><Heart size={16} />{totalSaved} saved</div>}
         />
 
+        {!loading ? (
+          <div className="sm:hidden -mx-4 px-4 sticky top-[4.5rem] z-10 border-b border-black/5 bg-[#fcfaf4]/80 backdrop-blur-xl">
+            <div className="flex items-center justify-between gap-3 py-3">
+              <div className="flex items-center gap-2">
+                <Heart size={16} className="text-ink-600" />
+                <span className="text-sm font-semibold text-ink-900">Saved</span>
+              </div>
+              <div className="badge-soft">
+                {totalSaved} saved
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         {pageMessage ? <InfoBanner tone="info">{pageMessage}</InfoBanner> : null}
 
         {loading ? (
-          <SurfaceCard className="p-10 text-center text-ink-500">Loading wishlist...</SurfaceCard>
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={`wishlist-skel-${index}`} className="space-y-4">
+                <SurfaceCard className="overflow-hidden">
+                  <div className="h-56 w-full bg-ink-100 animate-pulse" />
+                  <div className="space-y-3 p-5">
+                    <div className="h-4 w-3/4 rounded bg-ink-100 animate-pulse" />
+                    <div className="h-3 w-1/2 rounded bg-ink-100 animate-pulse" />
+                    <div className="h-8 w-full rounded-xl bg-ink-100 animate-pulse" />
+                  </div>
+                </SurfaceCard>
+                <div className="flex gap-3">
+                  <div className="h-11 flex-1 rounded-full bg-ink-100 animate-pulse" />
+                  <div className="h-11 flex-1 rounded-full bg-ink-100 animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : wishlistItems.length === 0 ? (
           <EmptyState
             title="No PGs saved yet"

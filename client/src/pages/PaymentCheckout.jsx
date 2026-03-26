@@ -5,7 +5,7 @@ import { SiPaytm } from "react-icons/si";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../store/auth-context";
 import { API } from "../utils/api";
-import { FormField, InfoBanner, PageSection, PageShell, SelectInput, SurfaceCard, TextInput } from "../components/ui.jsx";
+import { FormField, InfoBanner, PageSection, PageShell, SafeImage, SelectInput, SurfaceCard, TextInput } from "../components/ui.jsx";
 import { toastError, toastSuccess, toastWarn } from "../utils/toast.js";
 
 const paymentLabels = {
@@ -88,7 +88,8 @@ export function PaymentCheckout() {
   const payment = bookingData?.payment;
   const pg = bookingData?.pg;
   const MethodIcon = paymentIcons[selectedMethod] || CreditCard;
-  const pgImage = pg?.image || pg?.images?.[0] || "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80";
+  const pgImage = pg?.image || pg?.images?.[0] || "/fallback-pg.svg";
+  const isPayLater = selectedMethod === "pay_at_property";
 
   const methodOptions = useMemo(
     () => [
@@ -161,7 +162,7 @@ export function PaymentCheckout() {
     try {
       const { data } = await API.post(`/booking/${booking._id}/payment/process`, {
         paymentMethod: selectedMethod,
-        markAs,
+        markAs: isPayLater && markAs === "success" ? "reserve" : markAs,
         payerDetails,
       });
 
@@ -169,14 +170,21 @@ export function PaymentCheckout() {
         ...current,
         booking: data.booking,
         payment: data.payment,
+        pg: data.pg ? { ...(current?.pg ?? {}), ...data.pg } : current?.pg,
       }));
-      setPaymentResult(markAs);
+      setPaymentResult(isPayLater && markAs === "success" ? "reserve" : markAs);
       setMessage(
         markAs === "success"
-          ? `${data.message}. Transaction ID: ${data?.payment?.transactionId || "generated"}.`
+          ? isPayLater
+            ? data.message
+            : `${data.message}. Transaction ID: ${data?.payment?.transactionId || "generated"}.`
           : data.message
       );
-      toastSuccess(markAs === "success" ? data.message || "Payment completed." : data.message || "Payment attempt recorded.");
+      if (markAs === "failed") {
+        toastError(data.message || "Payment attempt recorded.");
+      } else {
+        toastSuccess(data.message || "Payment completed.");
+      }
     } catch (error) {
       const message = error?.response?.data?.message || "Unable to process payment.";
       setMessage(message);
@@ -214,7 +222,7 @@ export function PaymentCheckout() {
 
         <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
           <SurfaceCard className="overflow-hidden">
-            <img src={pgImage} alt={pg.title} className="h-72 w-full object-cover sm:h-96" />
+            <SafeImage src={pgImage} alt={pg.title} className="h-72 w-full object-cover sm:h-96" />
             <div className="space-y-5 p-8">
               <span className="section-kicker">Payment checkout</span>
               <h1 className="text-4xl tracking-tight text-ink-900" style={{ fontFamily: "var(--font-display)" }}>
@@ -224,7 +232,7 @@ export function PaymentCheckout() {
                 This simulates a real payment experience for your project. Later, you can connect the same flow to a live provider.
               </p>
 
-              <div className="rounded-lg border border-brand-100 bg-sky-50/70 p-5">
+              <div className="rounded-3xl border border-black/5 bg-sky-50/70 p-5">
                 <h2 className="text-xl font-semibold text-ink-900">{pg.title}</h2>
                 <p className="mt-2 text-sm text-ink-500">{pg.location || pg.address}</p>
                 <div className="mt-4 space-y-3">
@@ -243,6 +251,12 @@ export function PaymentCheckout() {
                     <strong className="text-ink-900">{paymentLabels[selectedMethod] || selectedMethod}</strong>
                   </div>
                   <div className="flex items-center justify-between gap-4 text-sm">
+                    <span className="text-ink-500">Booking Status</span>
+                    <strong className={booking.bookingStatus === "cancelled" ? "text-rose-700" : "text-emerald-700"}>
+                      {booking.bookingStatus}
+                    </strong>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 text-sm">
                     <span className="text-ink-500">Amount</span>
                     <strong className="text-ink-900">Rs. {Number(payment.amount || booking.totalAmount || 0).toLocaleString()}</strong>
                   </div>
@@ -250,11 +264,11 @@ export function PaymentCheckout() {
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-md border border-brand-100 bg-white p-4 text-sm text-ink-600">
+                <div className="rounded-2xl border border-black/5 bg-white p-4 text-sm text-ink-600">
                   <div className="mb-2 text-sky-700"><ShieldCheck size={18} /></div>
                   Pending payment state is stored in the database.
                 </div>
-                <div className="rounded-md border border-brand-100 bg-white p-4 text-sm text-ink-600">
+                <div className="rounded-2xl border border-black/5 bg-white p-4 text-sm text-ink-600">
                   <div className="mb-2 text-sky-700"><CheckCircle2 size={18} /></div>
                   You can later replace this with a real gateway callback.
                 </div>
@@ -262,16 +276,17 @@ export function PaymentCheckout() {
             </div>
           </SurfaceCard>
 
-          <SurfaceCard className="p-8">
-            <div className="flex items-center gap-3">
-              <div className="rounded-md bg-sky-50 p-3 text-sky-700">
-                <MethodIcon size={20} />
+          <div className="xl:sticky xl:top-24 h-fit">
+            <SurfaceCard className="p-8">
+              <div className="flex items-center gap-3">
+                <div className="rounded-2xl bg-sky-50 p-3 text-sky-700">
+                  <MethodIcon size={20} />
+                </div>
+                <div>
+                  <h2 className="text-2xl text-ink-900" style={{ fontFamily: "var(--font-display)" }}>Choose payment method</h2>
+                  <p className="text-sm text-ink-500">Use this simulated checkout now and plug in a provider later.</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-2xl text-ink-900" style={{ fontFamily: "var(--font-display)" }}>Choose payment method</h2>
-                <p className="text-sm text-ink-500">Use this simulated checkout now and plug in a provider later.</p>
-              </div>
-            </div>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               {methodOptions.map((option) => {
@@ -280,15 +295,15 @@ export function PaymentCheckout() {
                   <button
                     key={option.id}
                     type="button"
-                    className={`rounded-lg border p-4 text-left transition ${
+                    className={`rounded-2xl border p-4 text-left transition ${
                       selectedMethod === option.id
                         ? "border-brand-400 bg-sky-50"
-                        : "border-brand-100 bg-white hover:border-sky-300"
+                        : "border-black/5 bg-white hover:border-sky-200"
                     }`}
                     onClick={() => setSelectedMethod(option.id)}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="rounded-md bg-white p-2 text-sky-700 shadow-sm">
+                      <div className="rounded-xl bg-white p-2 text-sky-700 shadow-sm">
                         <Icon size={18} />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -304,7 +319,7 @@ export function PaymentCheckout() {
 
             <div className="mt-6 space-y-5">
               {selectedMethod === "upi" ? (
-                <div className="rounded-lg border border-brand-100 bg-sky-50/60 p-4">
+                <div className="rounded-2xl border border-black/5 bg-sky-50/60 p-4">
                   <p className="text-sm font-semibold text-ink-900">Accepted UPI-style wallets</p>
                   <div className="mt-3 flex items-center gap-4 text-3xl text-[#1676d2]">
                     <FaGooglePay />
@@ -314,7 +329,7 @@ export function PaymentCheckout() {
               ) : null}
 
               {selectedMethod === "card" ? (
-                <div className="rounded-lg border border-brand-100 bg-sky-50/60 p-4">
+                <div className="rounded-2xl border border-black/5 bg-sky-50/60 p-4">
                   <p className="text-sm font-semibold text-ink-900">Supported card networks</p>
                   <div className="mt-3 flex items-center gap-4 text-4xl">
                     <FaCcVisa className="text-[#1a1f71]" />
@@ -367,7 +382,7 @@ export function PaymentCheckout() {
               ) : null}
             </div>
 
-            <div className="mt-6 rounded-lg border border-brand-100 bg-ink-50/70 p-5">
+            <div className="mt-6 rounded-3xl border border-black/5 bg-ink-50/70 p-5">
               <div className="flex items-center justify-between gap-4 text-sm">
                 <span className="text-ink-500">Booking amount</span>
                 <strong className="text-ink-900">Rs. {Number(payment.amount || booking.totalAmount || 0).toLocaleString()}</strong>
@@ -383,35 +398,47 @@ export function PaymentCheckout() {
                 type="button"
                 className="btn-primary flex-1"
                 onClick={() => handlePayment("success")}
-                disabled={submitting || payment.paymentStatus === "paid"}
+                disabled={submitting || payment.paymentStatus === "paid" || booking.bookingStatus === "cancelled"}
               >
                 <CheckCircle2 size={18} />
-                {payment.paymentStatus === "paid" ? "Payment Completed" : submitting ? "Processing..." : "Simulate Success"}
+                {payment.paymentStatus === "paid"
+                  ? "Payment Completed"
+                  : submitting
+                    ? "Processing..."
+                    : isPayLater
+                      ? "Confirm Pay Later"
+                      : "Simulate Success"}
               </button>
               <button
                 type="button"
                 className="btn-secondary flex-1"
                 onClick={() => handlePayment("failed")}
-                disabled={submitting}
+                disabled={submitting || isPayLater || booking.bookingStatus === "cancelled"}
               >
                 <XCircle size={18} />
                 Simulate Failure
               </button>
             </div>
 
-            {paymentResult === "success" ? (
+            {paymentResult === "success" || paymentResult === "reserve" ? (
               <div className="mt-4">
                 <Link to="/profile" className="btn-secondary w-full">Go to Profile</Link>
               </div>
             ) : null}
 
-            {message ? <InfoBanner tone={paymentResult === "success" ? "success" : paymentResult === "failed" ? "error" : "info"} className="mt-6">{message}</InfoBanner> : null}
+            {message ? <InfoBanner tone={paymentResult === "success" || paymentResult === "reserve" ? "success" : paymentResult === "failed" ? "error" : "info"} className="mt-6">{message}</InfoBanner> : null}
             {location.state?.bookingTitle ? (
               <p className="mt-4 text-sm text-ink-500">
                 Booking created for <span className="font-semibold text-ink-900">{location.state.bookingTitle}</span>. Complete or simulate payment from here.
               </p>
             ) : null}
-          </SurfaceCard>
+            {booking.bookingStatus === "cancelled" ? (
+              <InfoBanner tone="error" className="mt-4">
+                This booking was cancelled after payment failure. The room has been released back to inventory.
+              </InfoBanner>
+            ) : null}
+            </SurfaceCard>
+          </div>
         </div>
       </PageShell>
     </PageSection>

@@ -62,37 +62,37 @@ export const Contact = () => {
                 <h2 className="mt-2 panel-title">Tell us how we can help</h2>
                 <p className="mt-2 text-sm text-ink-500">Share a few details and send your message directly from the site.</p>
               </div>
-            {message ? <InfoBanner tone={messageTone} className="mt-6">{message}</InfoBanner> : null}
-            <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-              <div className="grid gap-5 sm:grid-cols-2">
-                <FormField label="Name">
-                  <div className="relative">
-                    <UserRound className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" size={18} />
-                    <TextInput className="pl-11" name="name" value={formData.name} onChange={handleChange} required />
-                  </div>
+              {message ? <InfoBanner tone={messageTone} className="mt-6">{message}</InfoBanner> : null}
+              <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <FormField label="Name">
+                    <div className="relative">
+                      <UserRound className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" size={18} />
+                      <TextInput className="pl-11" name="name" value={formData.name} onChange={handleChange} required />
+                    </div>
+                  </FormField>
+
+                  <FormField label="Email">
+                    <div className="relative">
+                      <Mail className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" size={18} />
+                      <TextInput className="pl-11" name="email" type="email" value={formData.email} onChange={handleChange} required />
+                    </div>
+                  </FormField>
+                </div>
+
+                <FormField label="Subject" hint="Optional">
+                  <TextInput name="subject" value={formData.subject} onChange={handleChange} placeholder="How can we help?" />
                 </FormField>
 
-                <FormField label="Email">
-                  <div className="relative">
-                    <Mail className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" size={18} />
-                    <TextInput className="pl-11" name="email" type="email" value={formData.email} onChange={handleChange} required />
-                  </div>
+                <FormField label="Message">
+                  <TextArea name="message" rows="6" value={formData.message} onChange={handleChange} required />
                 </FormField>
-              </div>
 
-              <FormField label="Subject">
-                <TextInput name="subject" value={formData.subject} onChange={handleChange} placeholder="How can we help?" />
-              </FormField>
-
-              <FormField label="Message">
-                <TextArea name="message" rows="6" value={formData.message} onChange={handleChange} required />
-              </FormField>
-
-              <button type="submit" className="btn-primary w-full sm:w-auto" disabled={sending}>
-                <Send size={18} />
-                {sending ? "Sending..." : "Send Message"}
-              </button>
-            </form>
+                <button type="submit" className="btn-primary w-full sm:w-auto" disabled={sending}>
+                  <Send size={18} />
+                  {sending ? "Sending..." : "Send Message"}
+                </button>
+              </form>
             </SurfaceCard>
           </div>
         </PageShell>

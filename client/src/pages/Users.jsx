@@ -3,7 +3,10 @@ import { Mail, MessageSquareText, Phone, Search, ShieldCheck, Trash2, UserRound,
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth-context";
 import { API } from "../utils/api";
-import { InfoBanner, PageSection, PageShell, SurfaceCard } from "../components/ui.jsx";
+import { DashboardLayout } from "../components/DashboardLayout.jsx";
+import { InfoBanner, SurfaceCard } from "../components/ui.jsx";
+
+const toArray = (value) => (Array.isArray(value) ? value : []);
 
 export function Users() {
   const navigate = useNavigate();
@@ -42,8 +45,8 @@ export function Users() {
         ]);
 
         if (!cancelled) {
-          setUsers(usersData.users ?? []);
-          setMessages(messagesData.messages ?? []);
+          setUsers(toArray(usersData?.users));
+          setMessages(toArray(messagesData?.messages));
         }
       } catch (error) {
         if (!cancelled) {
@@ -65,7 +68,7 @@ export function Users() {
   }, [isAdmin, token]);
 
   const nonAdminUsers = useMemo(
-    () => users.filter((item) => !(item?.role === "admin" || item?.isAdmin)),
+    () => toArray(users).filter((item) => !(item?.role === "admin" || item?.isAdmin)),
     [users]
   );
 
@@ -84,9 +87,9 @@ export function Users() {
 
   const filteredMessages = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-    if (!term) return messages;
+    if (!term) return toArray(messages);
 
-    return messages.filter((item) =>
+    return toArray(messages).filter((item) =>
       [item.name, item.email, item.subject, item.message]
         .filter(Boolean)
         .join(" ")
@@ -99,7 +102,7 @@ export function Users() {
     try {
       const { data: result } = await API.delete(`/admin/users/${userId}`);
 
-      setUsers((current) => current.filter((item) => item._id !== userId));
+      setUsers((current) => toArray(current).filter((item) => item._id !== userId));
       setMessageType("success");
       setMessage(result.message || "User deleted successfully");
     } catch (error) {
@@ -112,7 +115,7 @@ export function Users() {
     try {
       const { data: result } = await API.delete(`/contact/${messageId}`);
 
-      setMessages((current) => current.filter((item) => item._id !== messageId));
+      setMessages((current) => toArray(current).filter((item) => item._id !== messageId));
       setMessageType("success");
       setMessage(result.message || "Contact message deleted successfully");
     } catch (error) {
@@ -124,12 +127,28 @@ export function Users() {
   if (!token || !isAdmin) return null;
 
   if (loading) {
-    return <PageSection><PageShell><SurfaceCard className="p-10 text-center text-ink-500">Loading users and messages...</SurfaceCard></PageShell></PageSection>;
+    return (
+      <DashboardLayout
+        role="admin"
+        kicker="Admin workspace"
+        title="Admin panel"
+        description="Loading users and messages..."
+      >
+        <SurfaceCard className="rounded-3xl border border-black/5 bg-white/85 p-10 text-center text-ink-500">
+          Loading users and messages...
+        </SurfaceCard>
+      </DashboardLayout>
+    );
   }
 
   return (
-    <PageSection className="pt-8 sm:pt-12">
-      <PageShell className="space-y-8">
+    <DashboardLayout
+      role="admin"
+      kicker="Admin workspace"
+      title="Admin panel"
+      description="Manage platform users and support messages."
+    >
+      <div className="space-y-8">
         <div className="rounded-[2rem] bg-gradient-to-br from-slate-50 via-indigo-50 to-sky-100 p-6 shadow-[0_32px_90px_-48px_rgba(30,41,59,0.38)] sm:p-8 lg:p-10">
           <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -303,7 +322,7 @@ export function Users() {
             </table>
           </div>
         </div>
-      </PageShell>
-    </PageSection>
+      </div>
+    </DashboardLayout>
   );
 }

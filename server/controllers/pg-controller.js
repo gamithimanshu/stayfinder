@@ -49,7 +49,7 @@ const listAllPgs = async (req, res, next) => {
           ...pg,
           reviewCount,
           averageRating,
-          reviews: reviews // Keep for frontend normalization
+          reviews: reviews, // Keep for frontend normalization
         };
       })
     );

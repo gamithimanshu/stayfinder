@@ -3,7 +3,28 @@ import { ImagePlus, Pencil, Trash2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth-context";
 import { API } from "../utils/api";
-import { FormField, InfoBanner, PageSection, PageShell, SectionHeading, SelectInput, SurfaceCard, TextArea, TextInput } from "../components/ui.jsx";
+import { normalizeListing } from "../utils/pg";
+import { DashboardLayout } from "../components/DashboardLayout.jsx";
+import { FormField, InfoBanner, SelectInput, SurfaceCard, TextArea, TextInput } from "../components/ui.jsx";
+
+const toArray = (value) => (Array.isArray(value) ? value : []);
+const toCsv = (value) => toArray(value).map((item) => String(item ?? "").trim()).filter(Boolean).join(", ");
+const normalizeOwnerPg = (value = {}) => ({ ...value, ...normalizeListing(value) });
+const normalizeOwnerBooking = (booking = {}) => ({
+  ...booking,
+  user: booking.user ?? booking.userId ?? {},
+  pg: booking.pg ?? booking.pgId ?? {},
+});
+const getResidentLabel = (user = {}) => user?.username || user?.name || user?.email || "Resident";
+const formatBookingDate = (value) => {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Date unavailable";
+  }
+
+  return date.toLocaleDateString("en-IN");
+};
 
 const initialEditState = {
   title: "",
@@ -22,7 +43,7 @@ const initialEditState = {
 
 const readFilesAsDataUrls = async (files) =>
   Promise.all(
-    Array.from(files).map(
+    Array.from(files || []).map(
       (file) =>
         new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -82,8 +103,8 @@ export function ManagePG() {
         ]);
 
         if (!cancelled) {
-          setPgs(pgData.pgs ?? []);
-          setBookings(bookingData.bookings ?? []);
+          setPgs(toArray(pgData?.pgs).map(normalizeOwnerPg));
+          setBookings(toArray(bookingData?.bookings).map(normalizeOwnerBooking));
         }
       } catch (error) {
         if (!cancelled) {
@@ -106,7 +127,7 @@ export function ManagePG() {
 
   const bookingsByPg = useMemo(() => {
     const map = new Map();
-    bookings.forEach((booking) => {
+    toArray(bookings).forEach((booking) => {
       const pgId = booking.pg?._id;
       if (!pgId) return;
       const existing = map.get(pgId) ?? [];
@@ -117,20 +138,22 @@ export function ManagePG() {
   }, [bookings]);
 
   const startEdit = (pg) => {
+    const normalizedPg = normalizeOwnerPg(pg);
+
     setEditingId(pg._id);
     setEditForm({
-      title: pg.title,
-      price: String(pg.price),
-      location: pg.location,
-      city: pg.city,
-      address: pg.address ?? pg.location ?? "",
-      gender: pg.gender,
-      roomType: pg.roomType ?? "single",
-      totalRooms: String(pg.totalRooms ?? pg.availableRooms ?? 0),
-      availableRooms: String(pg.availableRooms),
-      description: pg.description ?? "",
-      amenities: (pg.amenities ?? []).join(", "),
-      images: pg.images ?? [],
+      title: normalizedPg.title,
+      price: String(normalizedPg.price ?? ""),
+      location: normalizedPg.location,
+      city: normalizedPg.city,
+      address: pg.address ?? normalizedPg.location ?? "",
+      gender: normalizedPg.gender,
+      roomType: normalizedPg.roomType ?? "single",
+      totalRooms: String(pg.totalRooms ?? normalizedPg.totalRooms ?? normalizedPg.availableRooms ?? 0),
+      availableRooms: String(normalizedPg.availableRooms ?? 0),
+      description: normalizedPg.description ?? "",
+      amenities: toCsv(normalizedPg.amenities),
+      images: toArray(normalizedPg.images).filter(Boolean),
     });
   };
 
@@ -142,7 +165,7 @@ export function ManagePG() {
   const handleEditImages = async (event) => {
     try {
       const images = await readFilesAsDataUrls(event.target.files);
-      setEditForm((current) => ({ ...current, images }));
+      setEditForm((current) => ({ ...current, images: toArray(images).filter(Boolean) }));
       setMessage("");
     } catch {
       setMessageType("error");
@@ -154,20 +177,53 @@ export function ManagePG() {
     setMessage("");
     setMessageType("info");
 
+    const totalRooms = Number(editForm.totalRooms);
+    const availableRooms = Number(editForm.availableRooms);
+    const price = Number(editForm.price);
+
+    if (!editingId) {
+      setMessageType("error");
+      setMessage("Select a PG before saving changes.");
+      return;
+    }
+
+    if (!editForm.title.trim() || !editForm.city.trim() || !(editForm.address || editForm.location).trim()) {
+      setMessageType("error");
+      setMessage("Title, city, and address are required.");
+      return;
+    }
+
+    if (!Number.isFinite(price) || price < 0) {
+      setMessageType("error");
+      setMessage("Enter a valid monthly price.");
+      return;
+    }
+
+    if (!Number.isInteger(totalRooms) || totalRooms < 1) {
+      setMessageType("error");
+      setMessage("Total rooms must be at least 1.");
+      return;
+    }
+
+    if (!Number.isInteger(availableRooms) || availableRooms < 0 || availableRooms > totalRooms) {
+      setMessageType("error");
+      setMessage("Available rooms must be between 0 and the total room count.");
+      return;
+    }
+
     try {
-      const { data } = await API.put("/pg/update", {
-        id: editingId,
+      const { data } = await API.put(`/owner/pgs/${editingId}`, {
         ...editForm,
         area: editForm.location,
         address: editForm.address || editForm.location,
-        totalRooms: Number(editForm.totalRooms),
-        images: editForm.images,
-        amenities: editForm.amenities.split(",").map((item) => item.trim()).filter(Boolean),
-        price: Number(editForm.price),
-        availableRooms: Number(editForm.availableRooms),
+        totalRooms,
+        images: toArray(editForm.images).filter(Boolean),
+        amenities: String(editForm.amenities || "").split(",").map((item) => item.trim()).filter(Boolean),
+        price,
+        availableRooms,
       });
 
-      setPgs((current) => current.map((pg) => (pg._id === editingId ? data.pg : pg)));
+      setPgs((current) => toArray(current).map((pg) => (pg._id === editingId ? normalizeOwnerPg(data?.pg) : pg)));
       setEditingId("");
       setMessageType("success");
       setMessage(data.message || "PG updated successfully and sent back for admin approval");
@@ -179,10 +235,10 @@ export function ManagePG() {
 
   const deletePg = async (pgId) => {
     try {
-      const { data } = await API.delete("/pg/delete", { data: { id: pgId } });
+      const { data } = await API.delete(`/owner/pgs/${pgId}`);
 
-      setPgs((current) => current.filter((pg) => pg._id !== pgId));
-      setBookings((current) => current.filter((booking) => booking.pg?._id !== pgId));
+      setPgs((current) => toArray(current).filter((pg) => pg._id !== pgId));
+      setBookings((current) => toArray(current).filter((booking) => booking.pg?._id !== pgId));
       setMessageType("success");
       setMessage(data.message || "PG deleted successfully");
     } catch (error) {
@@ -194,29 +250,42 @@ export function ManagePG() {
   if (!token || !isOwner) return null;
 
   if (loading) {
-    return <PageSection><PageShell><SurfaceCard className="p-10 text-center text-ink-500">Loading your PG listings...</SurfaceCard></PageShell></PageSection>;
+    return (
+      <DashboardLayout
+        role="owner"
+        kicker="Owner workspace"
+        title="Manage PGs"
+        description="Loading your listings..."
+      >
+        <SurfaceCard className="rounded-3xl border border-black/5 bg-white/85 p-10 text-center text-ink-500">
+          Loading your PG listings...
+        </SurfaceCard>
+      </DashboardLayout>
+    );
   }
 
   return (
-    <PageSection className="pt-12 sm:pt-16">
-      <PageShell className="space-y-8">
-        <SectionHeading
-          kicker="Manage PGs"
-          title="Edit listings, remove them, and view resident bookings."
-          description="Everything for your existing properties is available here in one management space."
-        />
-        {message ? <InfoBanner tone={messageType === "error" ? "error" : "success"}>{message}</InfoBanner> : null}
+    <DashboardLayout
+      role="owner"
+      kicker="Owner workspace"
+      title="Manage PGs"
+      description="Everything for your existing properties is available here in one management space."
+    >
+      {message ? <InfoBanner tone={messageType === "error" ? "error" : "success"}>{message}</InfoBanner> : null}
 
-        <div className="space-y-6">
-          {pgs.length === 0 ? (
-            <SurfaceCard className="p-8">
-              <h2 className="panel-title">No PGs yet</h2>
-              <p className="mt-3 muted-note">Your listings will appear here once you add one.</p>
-            </SurfaceCard>
-          ) : null}
+      <div className="space-y-6">
+        {toArray(pgs).length === 0 ? (
+          <SurfaceCard className="p-8">
+            <h2 className="panel-title">No PGs yet</h2>
+            <p className="mt-3 muted-note">Your listings will appear here once you add one.</p>
+          </SurfaceCard>
+        ) : null}
 
-          {pgs.map((pg) => (
-            <SurfaceCard key={pg._id} className="space-y-6 p-8">
+        {(Array.isArray(pgs) ? pgs : []).map((pg) => {
+          const pgBookings = Array.isArray(bookingsByPg.get(pg._id)) ? bookingsByPg.get(pg._id) : [];
+
+          return (
+          <SurfaceCard key={pg._id} className="space-y-6 p-8">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="text-sm font-semibold text-ink-500">PG listing</p>
@@ -276,10 +345,10 @@ export function ManagePG() {
                     Replace images
                     <input type="file" accept="image/*" multiple onChange={handleEditImages} hidden />
                   </label>
-                  {editForm.images.length > 0 ? (
+                  {toArray(editForm.images).length > 0 ? (
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                      {editForm.images.map((image, index) => (
-                        <img key={`${index}-${image.slice(0, 32)}`} src={image} alt={`Preview ${index + 1}`} className="h-40 w-full rounded-2xl object-cover" />
+                      {toArray(editForm.images).map((image, index) => (
+                        <img key={`${index}-${String(image).slice(0, 32)}`} src={image} alt={`Preview ${index + 1}`} className="h-40 w-full rounded-2xl object-cover" />
                       ))}
                     </div>
                   ) : null}
@@ -293,14 +362,32 @@ export function ManagePG() {
               <div>
                 <p className="text-sm font-semibold text-ink-500">Bookings</p>
                 <div className="mt-4 space-y-4">
-                  {bookingsByPg.get(pg._id)?.length ? (
-                    bookingsByPg.get(pg._id).map((booking) => (
+                  {pgBookings.length ? (
+                    pgBookings.map((booking) => (
                       <div key={booking._id} className="flex items-start justify-between gap-4 rounded-2xl bg-ink-50 p-4">
                         <div>
-                          <p className="font-semibold text-ink-900">{booking.user?.username || booking.user?.email || "Resident"}</p>
+                          <p className="font-semibold text-ink-900">{getResidentLabel(booking.user)}</p>
                           <p className="mt-1 text-sm text-ink-500">{booking.user?.phone || booking.user?.email || "No contact info"}</p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                              booking.paymentStatus === "paid"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : booking.paymentStatus === "failed"
+                                  ? "bg-rose-100 text-rose-700"
+                                  : "bg-amber-100 text-amber-700"
+                            }`}>
+                              Payment: {booking.paymentStatus}
+                            </span>
+                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                              booking.bookingStatus === "cancelled"
+                                ? "bg-rose-100 text-rose-700"
+                                : "bg-sky-100 text-sky-700"
+                            }`}>
+                              Booking: {booking.bookingStatus}
+                            </span>
+                          </div>
                         </div>
-                        <p className="text-sm font-semibold text-ink-900">{new Date(booking.checkInDate).toLocaleDateString()}</p>
+                        <p className="text-sm font-semibold text-ink-900">{formatBookingDate(booking.checkInDate)}</p>
                       </div>
                     ))
                   ) : (
@@ -308,10 +395,10 @@ export function ManagePG() {
                   )}
                 </div>
               </div>
-            </SurfaceCard>
-          ))}
-        </div>
-      </PageShell>
-    </PageSection>
+          </SurfaceCard>
+          );
+        })}
+      </div>
+    </DashboardLayout>
   );
 }

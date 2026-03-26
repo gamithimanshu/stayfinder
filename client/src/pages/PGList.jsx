@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { MapPin, SlidersHorizontal, VenusAndMars } from "lucide-react";
+import { MapPin, SlidersHorizontal, VenusAndMars, X } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { API } from "../utils/api";
 import { normalizeListing } from "../utils/pg";
-import { PageSection, PageShell, PropertyCard, RatingPill } from "../components/ui.jsx";
+import { EmptyState, InfoBanner, PageSection, PageShell, PropertyCard, RatingPill, SurfaceCard } from "../components/ui.jsx";
 
 export function PGList() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -73,6 +73,12 @@ export function PGList() {
     setSearchParams(nextParams);
   };
 
+  const clearFilters = () => {
+    setSearchParams(new URLSearchParams());
+  };
+
+  const activeFiltersCount = [city, price, gender].filter((v) => String(v || "").trim()).length;
+
   return (
     <div>
       <PageSection className="pt-8 sm:pt-12">
@@ -96,10 +102,21 @@ export function PGList() {
                 <h2 className="mt-4 text-3xl text-ink-900" style={{ fontFamily: "var(--font-display)" }}>
                   Refine your PG search
                 </h2>
+                <p className="mt-2 text-sm text-ink-500">
+                  Choose a city, budget, and stay type. Clear filters anytime to see all listings again.
+                </p>
               </div>
-              <div className="badge-soft">
-                <SlidersHorizontal size={16} />
-                {pgListings.length} stays found
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="badge-soft">
+                  <SlidersHorizontal size={16} />
+                  {pgListings.length} stays found
+                </div>
+                {activeFiltersCount ? (
+                  <button type="button" className="btn-secondary min-h-11" onClick={clearFilters}>
+                    <X size={16} />
+                    Clear filters
+                  </button>
+                ) : null}
               </div>
             </div>
 
@@ -136,13 +153,29 @@ export function PGList() {
               </label>
             </div>
 
-            {error ? <p className="mt-4 text-sm text-rose-600">{error}</p> : null}
+            {error ? <InfoBanner tone="error" className="mt-4">{error}</InfoBanner> : null}
           </section>
           <section>
             {loading ? (
-              <div className="surface-card p-10 text-center text-ink-500">Loading PG listings...</div>
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <SurfaceCard key={`listing-skeleton-${index}`} className="overflow-hidden">
+                    <div className="h-56 w-full bg-ink-100 animate-pulse" />
+                    <div className="space-y-3 p-5">
+                      <div className="h-5 w-2/3 rounded bg-ink-100 animate-pulse" />
+                      <div className="h-4 w-1/2 rounded bg-ink-100 animate-pulse" />
+                      <div className="h-8 w-32 rounded bg-ink-100 animate-pulse" />
+                    </div>
+                  </SurfaceCard>
+                ))}
+              </div>
             ) : pgListings.length === 0 ? (
-              <div className="surface-card p-10 text-center text-ink-500">No PGs matched these filters.</div>
+              <EmptyState
+                title="No PGs matched these filters"
+                description="Try removing a filter or broaden the budget to see more stays."
+                actionLabel={activeFiltersCount ? "Clear filters" : "Browse all listings"}
+                actionTo={activeFiltersCount ? "/listings" : "/listings"}
+              />
             ) : (
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {pgListings.map((listing) => (

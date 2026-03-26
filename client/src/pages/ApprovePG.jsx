@@ -3,7 +3,10 @@ import { CheckCircle2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth-context";
 import { API } from "../utils/api";
-import { InfoBanner, PageSection, PageShell, SectionHeading, SurfaceCard } from "../components/ui.jsx";
+import { DashboardLayout } from "../components/DashboardLayout.jsx";
+import { InfoBanner, SafeImage, SurfaceCard } from "../components/ui.jsx";
+
+const toArray = (value) => (Array.isArray(value) ? value : []);
 
 export function ApprovePG() {
   const navigate = useNavigate();
@@ -38,7 +41,7 @@ export function ApprovePG() {
         const { data: result } = await API.get("/admin/pgs/pending");
 
         if (!cancelled) {
-          setPgs(result.pgs ?? []);
+          setPgs(Array.isArray(result?.pgs) ? result.pgs : []);
         }
       } catch (error) {
         if (!cancelled) {
@@ -75,65 +78,88 @@ export function ApprovePG() {
   if (!token || !isAdmin) return null;
 
   if (loading) {
-    return <PageSection><PageShell><SurfaceCard className="p-10 text-center text-ink-500">Loading PG approvals...</SurfaceCard></PageShell></PageSection>;
+    return (
+      <DashboardLayout
+        role="admin"
+        kicker="Admin workspace"
+        title="Approve PG"
+        description="Loading your approval queue..."
+      >
+        <SurfaceCard className="rounded-3xl border border-black/5 bg-white/85 p-10 text-center text-ink-500">
+          Loading PG approvals...
+        </SurfaceCard>
+      </DashboardLayout>
+    );
   }
 
+  const safePgs = toArray(pgs);
+
   return (
-    <PageSection className="pt-12 sm:pt-16">
-      <PageShell className="space-y-8">
-        <SectionHeading
-          kicker="Approve PG"
-          title="Review new owner listings before they go live."
-          description="Check owner details, pricing, images, and descriptions before approval."
-        />
-        {message ? <InfoBanner tone={messageType === "error" ? "error" : "success"}>{message}</InfoBanner> : null}
+    <DashboardLayout
+      role="admin"
+      kicker="Admin workspace"
+      title="Approve PG"
+      description="Review new owner listings before they go live."
+    >
+      {message ? <InfoBanner tone={messageType === "error" ? "error" : "success"}>{message}</InfoBanner> : null}
 
-        <div className="space-y-6">
-          {pgs.length === 0 ? (
-            <SurfaceCard className="p-8">
-              <h2 className="panel-title">No pending PG approvals</h2>
-              <p className="mt-3 muted-note">New owner submissions will appear here automatically.</p>
-            </SurfaceCard>
-          ) : null}
+      <div className="space-y-6">
+        {safePgs.length === 0 ? (
+          <SurfaceCard className="p-8">
+            <h2 className="panel-title">No pending PG approvals</h2>
+            <p className="mt-3 muted-note">New owner submissions will appear here automatically.</p>
+          </SurfaceCard>
+        ) : null}
 
-          {pgs.map((pg) => (
-            <SurfaceCard key={pg._id} className="space-y-6 p-8">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-ink-500">Pending listing</p>
-                  <h2 className="mt-1 text-2xl font-semibold text-ink-900">{pg.title}</h2>
-                  <p className="mt-2 text-sm text-ink-500">{pg.location}</p>
-                </div>
-                <button type="button" className="btn-primary" onClick={() => handleApprove(pg._id)}>
-                  <CheckCircle2 size={18} />
-                  Approve
-                </button>
+        {safePgs.map((pg) => (
+          <SurfaceCard key={pg._id} className="space-y-6 p-8">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-ink-500">Pending listing</p>
+                <h2 className="mt-1 text-2xl font-semibold text-ink-900">{pg.title}</h2>
+                <p className="mt-2 text-sm text-ink-500">{pg.location}</p>
               </div>
+              <button type="button" className="btn-primary" onClick={() => handleApprove(pg._id)}>
+                <CheckCircle2 size={18} />
+                Approve
+              </button>
+            </div>
 
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-2xl bg-ink-50 p-4"><p className="text-sm text-ink-500">Owner</p><p className="mt-1 font-semibold text-ink-900">{pg.ownerId?.username || pg.ownerId?.name || "Not available"}</p></div>
-                <div className="rounded-2xl bg-ink-50 p-4"><p className="text-sm text-ink-500">Email</p><p className="mt-1 font-semibold text-ink-900">{pg.ownerId?.email || "Not available"}</p></div>
-                <div className="rounded-2xl bg-ink-50 p-4"><p className="text-sm text-ink-500">Phone</p><p className="mt-1 font-semibold text-ink-900">{pg.ownerId?.phone || "Not available"}</p></div>
-                <div className="rounded-2xl bg-ink-50 p-4"><p className="text-sm text-ink-500">Price</p><p className="mt-1 font-semibold text-ink-900">Rs. {Number(pg.price).toLocaleString()}/month</p></div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-2xl bg-ink-50 p-4">
+                <p className="text-sm text-ink-500">Owner</p>
+                <p className="mt-1 font-semibold text-ink-900">{pg.ownerId?.username || pg.ownerId?.name || "Not available"}</p>
               </div>
+              <div className="rounded-2xl bg-ink-50 p-4">
+                <p className="text-sm text-ink-500">Email</p>
+                <p className="mt-1 font-semibold text-ink-900">{pg.ownerId?.email || "Not available"}</p>
+              </div>
+              <div className="rounded-2xl bg-ink-50 p-4">
+                <p className="text-sm text-ink-500">Phone</p>
+                <p className="mt-1 font-semibold text-ink-900">{pg.ownerId?.phone || "Not available"}</p>
+              </div>
+              <div className="rounded-2xl bg-ink-50 p-4">
+                <p className="text-sm text-ink-500">Price</p>
+                <p className="mt-1 font-semibold text-ink-900">Rs. {Number(pg.price).toLocaleString()}/month</p>
+              </div>
+            </div>
 
-              <p className="text-sm leading-7 text-ink-500">{pg.description || "No description provided."}</p>
+            <p className="text-sm leading-7 text-ink-500">{pg.description || "No description provided."}</p>
 
-              {Array.isArray(pg.images) && pg.images.length > 0 ? (
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                  {pg.images.map((image, index) => (
-                    <img key={`${pg._id}-${index}`} src={image} alt={`${pg.title} ${index + 1}`} className="h-44 w-full rounded-2xl object-cover" />
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-brand-200 bg-brand-50/60 px-6 py-8 text-center text-sm text-ink-500">
-                  No images uploaded for this listing.
-                </div>
-              )}
-            </SurfaceCard>
-          ))}
-        </div>
-      </PageShell>
-    </PageSection>
+            {Array.isArray(pg.images) && pg.images.length > 0 ? (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {toArray(pg.images).map((image, index) => (
+                  <SafeImage key={`${pg._id}-${index}`} src={image} alt={`${pg.title} ${index + 1}`} className="h-44 w-full rounded-2xl object-cover" />
+                ))}
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-2xl border border-dashed border-brand-200 bg-brand-50/60">
+                <SafeImage src="" alt={`${pg.title} fallback`} className="h-44 w-full object-cover" />
+              </div>
+            )}
+          </SurfaceCard>
+        ))}
+      </div>
+    </DashboardLayout>
   );
 }

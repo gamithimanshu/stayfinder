@@ -1,48 +1,123 @@
-# StayFinder - PG & Hostel Finder System
+# StayFinder
 
-StayFinder is a full-stack MERN application for discovering, managing, and moderating PG and hostel listings.
+StayFinder is a MERN stack PG and hostel management platform for residents, property owners, and admins. It includes listing discovery, bookings, payment tracking, wishlists, reviews, moderation workflows, and analytics dashboards for both admin and owner roles.
 
-## Folder Structure
+## Highlights
+
+- Resident flow for browsing PGs, viewing details, booking rooms, and tracking payments
+- Owner workspace for creating listings, managing inventory, and monitoring revenue and bookings
+- Admin workspace for PG approvals, user management, support visibility, and platform analytics
+- MongoDB-backed booking and payment relations across `User -> Booking -> PG -> Payment`
+- Recharts-powered dashboards with monthly revenue, booking trends, top listings, and recent transactions
+- Defensive frontend loading, empty, and error states for production use
+
+## Tech Stack
+
+- Frontend: React, Vite, Tailwind CSS, Recharts, Axios
+- Backend: Node.js, Express
+- Database: MongoDB with Mongoose
+- Auth: JWT
+
+## Project Structure
 
 ```text
 StayFinder/
-├── client/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── store/
-│   │   ├── utils/
-│   │   ├── App.jsx
-│   │   ├── index.css
-│   │   └── main.jsx
-│   ├── package.json
-│   └── vite.config.js
-├── server/
-│   ├── controllers/
-│   ├── middlewares/
-│   ├── models/
-│   ├── router/
-│   ├── uploads/
-│   ├── utils/
-│   ├── validators/
-│   ├── .env.example
-│   ├── package.json
-│   ├── seed.js
-│   └── server.js
-└── README.md
+|-- client/
+|   |-- public/
+|   |-- src/
+|   |   |-- components/
+|   |   |-- hooks/
+|   |   |-- pages/
+|   |   |-- store/
+|   |   `-- utils/
+|   |-- package.json
+|   `-- vite.config.js
+|-- server/
+|   |-- controllers/
+|   |-- middlewares/
+|   |-- models/
+|   |-- router/
+|   |-- scripts/
+|   |-- utils/
+|   `-- validators/
+`-- README.md
 ```
 
-## Database Schema
+## Core Modules
 
-- `Users`: stores account details, password hash, role, blocked state, and wishlist count.
-- `PgHostel`: stores property info, owner reference, images, amenities, rules, approval status, ratings, and booking counters.
-- `Booking`: stores booking lifecycle data between a user and a listing owner.
-- `Payment`: stores payment status, method, transaction id, and booking reference.
-- `Review`: stores one review per user per listing with rating and comment.
-- `Wishlist`: stores user-listing saved combinations.
-- `ContactMessages`: stores contact form submissions for admin review.
-- `AdminActivityLog`: stores admin-side moderation and monitoring actions.
+- `server/models/user-models.js`: users, roles, and auth helpers
+- `server/models/pg-model.js`: PG/hostel listings and inventory
+- `server/models/booking-model.js`: booking lifecycle and totals
+- `server/models/payment-model.js`: payment status, amount, method, and transaction id
+- `server/utils/dashboard-analytics.js`: shared analytics layer for admin and owner dashboards
+- `client/src/pages/AdminDashboard.jsx`: platform analytics UI
+- `client/src/pages/OwnerDashboard.jsx`: owner analytics UI
+
+## Main Features
+
+- Authentication and role-based access
+- Public PG listing discovery
+- PG detail pages with reviews and wishlists
+- Booking creation and payment simulation flow
+- Owner listing creation, editing, and deletion
+- Admin PG approval and user management
+- Responsive analytics dashboards with revenue and booking charts
+- Auto-refreshing dashboard data after bookings and payment updates
+
+## API Summary
+
+### Auth
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/user`
+
+### PG / Listing
+
+- `GET /api/pg`
+- `GET /api/pg/:id`
+- `POST /api/owner/pgs`
+- `PUT /api/owner/pgs/:id`
+- `DELETE /api/owner/pgs/:id`
+
+### Booking / Payment
+
+- `POST /api/booking`
+- `GET /api/booking/:bookingId/payment`
+- `POST /api/booking/:bookingId/payment/process`
+
+### Owner
+
+- `GET /api/owner/dashboard`
+- `GET /api/owner/pgs`
+- `GET /api/owner/bookings`
+
+### Admin
+
+- `GET /api/admin/dashboard`
+- `GET /api/admin/pgs/pending`
+- `PUT /api/admin/approve/:id`
+- `GET /api/admin/users`
+- `DELETE /api/admin/users/:id`
+
+### Other
+
+- `POST /api/contact`
+- `GET /api/wishlist`
+- `POST /api/wishlist/:pgId`
+- `GET /api/review/:pgId`
+- `POST /api/review/:pgId`
+
+## Local Setup
+
+1. Clone the repository.
+2. Install backend dependencies with `cd server && npm install`
+3. Install frontend dependencies with `cd ../client && npm install`
+4. Copy `server/.env.example` to `server/.env`
+5. Configure MongoDB connection values in `server/.env`
+6. Start the backend with `cd server && npm run dev`
+7. Start the frontend with `cd client && npm run dev`
+8. Open `http://localhost:5173`
 
 ## Sample Accounts
 
@@ -50,51 +125,16 @@ StayFinder/
 - Owner: `owner@stayfinder.com` / `Owner@123`
 - User: `user@stayfinder.com` / `User@123`
 
-## Setup Guide
+## Recent Dashboard Work
 
-1. Install backend dependencies:
-   - `cd server`
-   - `npm install`
-2. Install frontend dependencies:
-   - `cd ../client`
-   - `npm install`
-3. Create backend environment file:
-   - copy `server/.env.example` to `server/.env`
-4. Start MongoDB locally or point `DB_URI` to MongoDB Atlas.
-5. Seed sample data:
-   - `cd server`
-   - `npm run seed`
-6. Start the backend:
-   - `npm run dev`
-7. Start the frontend in another terminal:
-   - `cd client`
-   - `npm run dev`
-8. Open `http://localhost:5173`
+- Fixed inconsistent earnings and booking totals by centralizing MongoDB aggregations
+- Added monthly revenue and booking trend datasets in frontend-ready chart format
+- Added top hostels and recent transactions sections for admin and owner dashboards
+- Added safer loading, empty, and error handling around dashboard API requests
+- Improved dashboard auto-refresh behavior for fresher analytics after payment and booking events
 
-## API Overview
+## Verification
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/me`
-- `GET /api/listings`
-- `GET /api/listings/featured`
-- `GET /api/listings/:id`
-- `POST /api/listings`
-- `PUT /api/listings/:id`
-- `DELETE /api/listings/:id`
-- `POST /api/bookings`
-- `GET /api/bookings/me`
-- `GET /api/bookings/owner`
-- `PATCH /api/bookings/:id/status`
-- `PATCH /api/bookings/:id/payment`
-- `GET /api/wishlist`
-- `POST /api/wishlist/:listingId`
-- `GET /api/reviews/:listingId`
-- `POST /api/reviews/:listingId`
-- `POST /api/contact`
-- `GET /api/admin/dashboard`
-- `GET /api/admin/listings/pending`
-- `GET /api/admin/users`
-- `GET /api/admin/contacts`
-- `GET /api/admin/activity`
-- `GET /api/owner/dashboard`
+- Frontend production build passes with `npm run build` inside `client`
+- Server analytics modules pass syntax checks with `node --check`
+- Current live-update behavior uses polling and focus refresh, and can be extended later with Socket.io if needed

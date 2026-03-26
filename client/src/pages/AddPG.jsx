@@ -4,9 +4,11 @@ import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth-context";
 import { API } from "../utils/api";
-import { FormField, InfoBanner, PageSection, PageShell, SectionHeading, SelectInput, SurfaceCard, TextArea, TextInput } from "../components/ui.jsx";
+import { DashboardLayout } from "../components/DashboardLayout.jsx";
+import { FormField, InfoBanner, SelectInput, SurfaceCard, TextArea, TextInput } from "../components/ui.jsx";
 
 const MotionForm = motion.form;
+const toArray = (value) => (Array.isArray(value) ? value : []);
 
 const initialForm = {
   title: "",
@@ -25,7 +27,7 @@ const initialForm = {
 
 const readFilesAsDataUrls = async (files) =>
   Promise.all(
-    Array.from(files).map(
+    Array.from(files || []).map(
       (file) =>
         new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -58,7 +60,7 @@ export function AddPG() {
   }, [isOwner, location.pathname, navigate, token, user]);
 
   const amenities = useMemo(
-    () => formData.amenities.split(",").map((item) => item.trim()).filter(Boolean),
+    () => String(formData.amenities || "").split(",").map((item) => item.trim()).filter(Boolean),
     [formData.amenities]
   );
 
@@ -97,7 +99,7 @@ export function AddPG() {
     setMessageTone("info");
 
     try {
-      const { data } = await API.post("/pg/add", {
+      const { data } = await API.post("/owner/pgs", {
           ...formData,
           area: formData.location,
           address: formData.address || formData.location,
@@ -128,16 +130,20 @@ export function AddPG() {
   }
 
   return (
-    <PageSection className="pt-12 sm:pt-16">
-      <PageShell className="space-y-8">
-        <SectionHeading
-          kicker="Add PG"
-          title="Create a polished new listing for your property."
-          description="Fill in the details below and publish a listing that feels complete and trustworthy."
-        />
-        {message ? <InfoBanner tone={messageTone}>{message}</InfoBanner> : null}
-        <MotionForm onSubmit={handleSubmit} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-          <SurfaceCard className="space-y-6 p-8">
+    <DashboardLayout
+      role="owner"
+      kicker="Owner workspace"
+      title="Add PG"
+      description="Fill in the details below and publish a listing that feels complete and trustworthy."
+    >
+      {message ? <InfoBanner tone={messageTone}>{message}</InfoBanner> : null}
+      <MotionForm
+        onSubmit={handleSubmit}
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45 }}
+      >
+        <SurfaceCard className="space-y-6 p-8">
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               <FormField label="Title"><TextInput name="title" value={formData.title} onChange={handleChange} required /></FormField>
               <FormField label="Price"><TextInput name="price" type="number" min="0" value={formData.price} onChange={handleChange} required /></FormField>
@@ -171,10 +177,10 @@ export function AddPG() {
               <input type="file" accept="image/*" multiple onChange={handleImages} hidden />
             </label>
 
-            {formData.images.length > 0 ? (
+            {toArray(formData.images).length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {formData.images.map((image, index) => (
-                  <img key={`${index}-${image.slice(0, 32)}`} src={image} alt={`Preview ${index + 1}`} className="h-40 w-full rounded-2xl object-cover" />
+                {toArray(formData.images).map((image, index) => (
+                  <img key={`${index}-${String(image).slice(0, 32)}`} src={image} alt={`Preview ${index + 1}`} className="h-40 w-full rounded-2xl object-cover" />
                 ))}
               </div>
             ) : null}
@@ -190,8 +196,7 @@ export function AddPG() {
               {saving ? "Saving..." : "Create PG"}
             </button>
           </SurfaceCard>
-        </MotionForm>
-      </PageShell>
-    </PageSection>
+      </MotionForm>
+    </DashboardLayout>
   );
 }

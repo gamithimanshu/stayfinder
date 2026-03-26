@@ -28,7 +28,8 @@ export const Home = () => {
   });
 
   const deriveStatsFromListings = (rows) => {
-    const reviews = rows.flatMap((listing) => listing.reviews ?? []);
+    const safeRows = Array.isArray(rows) ? rows : [];
+    const reviews = safeRows.flatMap((listing) => (Array.isArray(listing?.reviews) ? listing.reviews : []));
     const validRatings = reviews
       .map((review) => Number(review.rating))
       .filter((rating) => Number.isFinite(rating) && rating > 0);
@@ -38,12 +39,12 @@ export const Home = () => {
 
     return {
       residentCount: reviewerNames.size,
-      verifiedListingCount: rows.length,
+      verifiedListingCount: safeRows.length,
       averageRating: validRatings.length
         ? Number((validRatings.reduce((sum, rating) => sum + rating, 0) / validRatings.length).toFixed(1))
         : null,
       reviewCount: reviews.length,
-      citiesCovered: new Set(rows.map((listing) => listing.city).filter(Boolean)).size,
+      citiesCovered: new Set(safeRows.map((listing) => listing.city).filter(Boolean)).size,
     };
   };
 

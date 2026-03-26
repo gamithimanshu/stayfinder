@@ -25,6 +25,7 @@ const navigation = {
 
 export function DashboardLayout({ role, kicker, title, description, actions, children }) {
   const config = navigation[role];
+  const items = Array.isArray(config?.items) ? config.items : [];
 
   if (!config) {
     return children;
@@ -40,7 +41,7 @@ export function DashboardLayout({ role, kicker, title, description, actions, chi
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">{config.label}</p>
               </div>
               <nav className="flex gap-2 overflow-x-auto p-3 lg:block lg:space-y-1 lg:overflow-visible">
-                {config.items.map(({ to, label, icon }) => (
+                {items.map(({ to, label, icon }) => (
                   <NavLink
                     key={to}
                     to={to}

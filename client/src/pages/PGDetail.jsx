@@ -12,7 +12,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../store/auth-context";
 import { API } from "../utils/api";
 import { getReviewStats, normalizeListing } from "../utils/pg";
-import { FormField, InfoBanner, PageSection, PageShell, RatingPill, SelectInput, SurfaceCard, TextArea } from "../components/ui.jsx";
+import { FormField, InfoBanner, PageSection, PageShell, RatingPill, SafeImage, SurfaceCard, TextArea } from "../components/ui.jsx";
 import { toastError, toastSuccess } from "../utils/toast.js";
 
 export function PGDetail() {
@@ -70,6 +70,7 @@ export function PGDetail() {
   const galleryImages = pg?.images?.length ? pg.images : [pg?.image].filter(Boolean);
   const amenities = Array.isArray(pg?.amenities) ? pg.amenities : [];
   const reviews = Array.isArray(pg?.reviews) ? pg.reviews : [];
+  const roomsLeft = Number(pg?.availableRooms ?? 0);
 
   const ensureAuthenticated = () => {
     if (token) return true;
@@ -189,7 +190,7 @@ export function PGDetail() {
           <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
             <div className="space-y-4">
               <SurfaceCard className="overflow-hidden">
-                <img
+                <SafeImage
                   src={selectedImage || pg.image}
                   alt={pg.title}
                   className="h-[22rem] w-full object-cover sm:h-[32rem]"
@@ -204,19 +205,22 @@ export function PGDetail() {
                     onClick={() => setSelectedImage(image)}
                     aria-label={`View image for ${pg.title}`}
                   >
-                    <img src={image} alt={pg.title} className="h-28 w-full object-cover" />
+                    <SafeImage src={image} alt={pg.title} className="h-28 w-full object-cover" />
                   </button>
                 ))}
               </div>
             </div>
 
-            <div>
+            <div className="xl:sticky xl:top-24 h-fit">
               <SurfaceCard className="p-8">
                 <span className="section-kicker">Verified PG detail</span>
-                <h1 className="mt-5 text-4xl font-black tracking-tight text-ink-900">{pg.title}</h1>
+                <h1 className="mt-5 text-4xl font-black tracking-tight text-ink-900" style={{ fontFamily: "var(--font-display)" }}>
+                  {pg.title}
+                </h1>
                 <div className="mt-5 flex flex-wrap items-center gap-3">
                   <span className="rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white">
-                    Rs. {pg.price.toLocaleString()}/month
+                    Rs. {pg.price.toLocaleString()}
+                    <span className="ml-1 text-white/70">/month</span>
                   </span>
                   <RatingPill averageRating={averageRating.averageRating} reviewCount={averageRating.reviewCount} />
                   <span className="badge-soft">
@@ -241,22 +245,32 @@ export function PGDetail() {
                   </div>
                   <div className="rounded-2xl bg-ink-50 p-4 text-sm text-ink-700">
                     <Users size={18} className="mb-3" />
-                    {pg.availableRooms} rooms left
+                    {roomsLeft} rooms left
                   </div>
                 </div>
 
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                  <button type="button" className="btn-primary flex-1" onClick={handleBooking} disabled={bookingLoading || Number(pg.availableRooms ?? 0) < 1}>
+                <div className="mt-8 flex flex-col gap-3">
+                  <button
+                    type="button"
+                    className="btn-primary w-full"
+                    onClick={handleBooking}
+                    disabled={bookingLoading || roomsLeft < 1}
+                  >
                     <CalendarCheck2 size={18} />
-                    {bookingLoading ? "Booking..." : "Book Now"}
+                    {bookingLoading ? "Opening booking..." : "Book Now"}
                   </button>
-                  <button type="button" className="btn-secondary flex-1" onClick={handleWishlist} disabled={wishlistLoading}>
+                  <button
+                    type="button"
+                    className="btn-secondary w-full"
+                    onClick={handleWishlist}
+                    disabled={wishlistLoading}
+                  >
                     <Heart size={18} />
                     {wishlistLoading ? "Saving..." : "Add to Wishlist"}
                   </button>
                 </div>
 
-                {Number(pg.availableRooms ?? 0) < 1 ? <InfoBanner tone="error" className="mt-4">This PG currently has no rooms available.</InfoBanner> : null}
+                {roomsLeft < 1 ? <InfoBanner tone="error" className="mt-4">This PG currently has no rooms available.</InfoBanner> : null}
               </SurfaceCard>
             </div>
           </div>
@@ -289,20 +303,20 @@ export function PGDetail() {
               <p className="mt-2 text-sm text-ink-500">Share your stay experience to help future residents.</p>
               <form className="mt-6 space-y-5" onSubmit={handleReviewSubmit}>
                 <FormField label="Rating">
-                  <div className="flex items-center gap-2 mb-2">
-                    {[5,4,3,2,1].map((star) => (
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
                       <Star
                         key={star}
                         size={24}
-                        fill={Number(reviewRating) >= star ? '#fbbf24' : 'none'}
+                        fill={Number(reviewRating) >= star ? "currentColor" : "none"}
                         strokeWidth={2}
-                        className={`cursor-pointer transition-colors ${Number(reviewRating) >= star ? 'text-yellow-400' : 'text-gray-300'} hover:text-yellow-400`}
+                        className={`cursor-pointer transition-colors ${Number(reviewRating) >= star ? "text-yellow-500" : "text-ink-300"} hover:text-yellow-500`}
                         onClick={() => setReviewRating(star.toString())}
                       />
                     ))}
-                    <span className="ml-2 font-medium">{reviewRating} stars</span>
+                    <span className="ml-2 text-sm font-semibold text-ink-700">{reviewRating} / 5</span>
                   </div>
-                  <input type="range" min="1" max="5" step="1" value={reviewRating} onChange={(event) => setReviewRating(event.target.value)} className="w-full h-2 cursor-pointer appearance-none rounded-lg bg-gray-200 accent-brand-500" />
+                  <p className="mt-2 text-xs text-ink-500">Tap a star to rate this stay.</p>
                 </FormField>
                 <FormField label="Comment">
                   <TextArea rows="4" placeholder="Share your stay experience" value={reviewComment} onChange={(event) => setReviewComment(event.target.value)} required />

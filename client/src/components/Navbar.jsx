@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Heart, Home, Menu, Search, UserRound, X } from "lucide-react";
 import { useAuth } from "../store/auth-context.js";
+import { cn } from "../utils/cn";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -16,11 +17,19 @@ export function Navbar() {
     { to: "/contact", label: "Contact" },
   ];
 
-  const baseLink = "rounded-full px-4 py-2 text-sm font-medium text-ink-500 transition hover:bg-white hover:text-ink-900";
+  const baseLink =
+    "relative inline-flex items-center rounded-full px-4 py-2 text-sm font-medium text-ink-500 transition hover:bg-white hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fcfaf4]";
+
   const navClass = ({ isActive }) =>
     isActive
-      ? "rounded-full bg-brand-50 px-4 py-2 text-sm font-medium text-brand-800"
+      ? cn(
+          baseLink,
+          "bg-brand-50 text-brand-800 pl-10 pr-4",
+          "before:content-[''] before:absolute before:left-4 before:top-1/2 before:h-2 before:w-2 before:-translate-y-1/2 before:rounded-full before:bg-brand-600"
+        )
       : baseLink;
+
+  const safeLinks = Array.isArray(links) ? links : [];
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/5 bg-[#fcfaf4]/85 backdrop-blur-xl">
@@ -38,7 +47,7 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-2 rounded-full border border-black/5 bg-white/70 p-1.5 lg:flex">
-          {links.map((link) => (
+          {safeLinks.map((link) => (
             <NavLink key={link.to} to={link.to} className={navClass}>
               {link.label}
             </NavLink>
@@ -79,7 +88,7 @@ export function Navbar() {
       {mobileOpen ? (
         <div className="border-t border-black/5 bg-[#fcfaf4] lg:hidden">
           <div className="page-shell flex flex-col gap-3 py-4">
-            {links.map((link) => (
+            {safeLinks.map((link) => (
               <NavLink key={link.to} to={link.to} className={navClass} onClick={() => setMobileOpen(false)}>
                 {link.label}
               </NavLink>

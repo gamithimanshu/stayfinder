@@ -7,7 +7,7 @@ const getListingQuery = (listing = {}) => {
 
 export function MapView({ listings = [], onMarkerClick = () => {}, className = "" }) {
   const validListings = useMemo(
-    () => listings.filter((listing) => Boolean(getListingQuery(listing))),
+    () => (Array.isArray(listings) ? listings : []).filter((listing) => Boolean(getListingQuery(listing))),
     [listings]
   );
   const [selectedId, setSelectedId] = useState(validListings[0]?.id ?? validListings[0]?._id ?? "");
@@ -119,4 +119,3 @@ export function MapView({ listings = [], onMarkerClick = () => {}, className = "
     </div>
   );
 }
-

@@ -1,22 +1,113 @@
-import { createElement, useEffect, useMemo, useState } from "react";
-import { Building2, CalendarRange, CheckCircle2, Clock3, DoorOpen, PlusCircle, Search } from "lucide-react";
+import { useEffect } from "react";
+import { Building2, CalendarRange, CheckCircle2, Clock3, Coins, DoorOpen } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth-context";
-import { API } from "../utils/api";
-import { PageSection, PageShell, SurfaceCard } from "../components/ui.jsx";
+import { DashboardLayout } from "../components/DashboardLayout.jsx";
+import { AnimatedStatCard } from "../components/dashboard/AnimatedStatCard.jsx";
+import {
+  DonutChartCard,
+  MultiBarChartCard,
+  TrendChartCard,
+  formatDashboardCount,
+  formatDashboardCurrency,
+} from "../components/dashboard/DashboardCharts.jsx";
+import { InfoBanner, SurfaceCard } from "../components/ui.jsx";
+import { useDashboardData } from "../hooks/useDashboardData.js";
+
+const emptyChart = { labels: [], datasets: [], points: [] };
+
+const emptyDashboard = {
+  stats: {
+    totalPgs: 0,
+    totalBookings: 0,
+    activeBookings: 0,
+    cancelledBookings: 0,
+    totalAvailableRooms: 0,
+    pendingPgs: 0,
+    approvedPgs: 0,
+    totalRevenue: 0,
+    paidEarnings: 0,
+    pendingEarnings: 0,
+    failedRevenue: 0,
+    paidBookings: 0,
+    pendingBookings: 0,
+  },
+  charts: {
+    monthlyRevenue: emptyChart,
+    bookingTrends: emptyChart,
+    revenueBreakdown: emptyChart,
+    approvalBreakdown: emptyChart,
+  },
+  topHostels: [],
+  recentTransactions: [],
+  recentPgs: [],
+};
+
+const toArray = (value) => (Array.isArray(value) ? value : []);
+const safeNumber = (value) => {
+  const number = Number(value ?? 0);
+  return Number.isFinite(number) ? number : 0;
+};
+
+const formatDate = (value, options = {}) => {
+  if (!value) return "Recently";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Recently";
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    ...options,
+  }).format(date);
+};
+
+const formatDateTime = (value) => formatDate(value, { hour: "numeric", minute: "2-digit" });
+
+const statusPillClass = (status, tone = "payment") => {
+  if (tone === "approval") {
+    return status ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700";
+  }
+
+  if (status === "paid") return "bg-emerald-100 text-emerald-700";
+  if (status === "failed") return "bg-rose-100 text-rose-700";
+  if (status === "cancelled") return "bg-rose-100 text-rose-700";
+  return "bg-amber-100 text-amber-700";
+};
+
+function normalizeDashboard(result) {
+  return {
+    stats: {
+      totalPgs: safeNumber(result?.stats?.totalPgs),
+      totalBookings: safeNumber(result?.stats?.totalBookings),
+      activeBookings: safeNumber(result?.stats?.activeBookings),
+      cancelledBookings: safeNumber(result?.stats?.cancelledBookings),
+      totalAvailableRooms: safeNumber(result?.stats?.totalAvailableRooms),
+      pendingPgs: safeNumber(result?.stats?.pendingPgs),
+      approvedPgs: safeNumber(result?.stats?.approvedPgs),
+      totalRevenue: safeNumber(result?.stats?.totalRevenue),
+      paidEarnings: safeNumber(result?.stats?.paidEarnings),
+      pendingEarnings: safeNumber(result?.stats?.pendingEarnings),
+      failedRevenue: safeNumber(result?.stats?.failedRevenue),
+      paidBookings: safeNumber(result?.stats?.paidBookings),
+      pendingBookings: safeNumber(result?.stats?.pendingBookings),
+    },
+    charts: {
+      monthlyRevenue: result?.charts?.monthlyRevenue ?? emptyChart,
+      bookingTrends: result?.charts?.bookingTrends ?? emptyChart,
+      revenueBreakdown: result?.charts?.revenueBreakdown ?? emptyChart,
+      approvalBreakdown: result?.charts?.approvalBreakdown ?? emptyChart,
+    },
+    topHostels: toArray(result?.topHostels),
+    recentTransactions: toArray(result?.recentTransactions),
+    recentPgs: toArray(result?.recentPgs),
+  };
+}
 
 export function OwnerDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { token, user } = useAuth();
   const isOwner = user?.role === "owner" || user?.role === "admin" || Boolean(user?.isAdmin);
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState({
-    stats: { totalPgs: 0, totalBookings: 0, totalAvailableRooms: 0, pendingPgs: 0, approvedPgs: 0 },
-    recentPgs: [],
-    recentBookings: [],
-  });
-  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     if (!token) {
@@ -29,226 +120,243 @@ export function OwnerDashboard() {
     }
   }, [isOwner, location.pathname, navigate, token, user]);
 
-  useEffect(() => {
-    if (!token || !isOwner) return;
-
-    let cancelled = false;
-
-    const loadDashboard = async () => {
-      try {
-        const { data: result } = await API.get("/owner/dashboard");
-
-        if (!cancelled) {
-          setData(result);
-        }
-      } catch {
-        if (!cancelled) {
-          setData({
-            stats: { totalPgs: 0, totalBookings: 0, totalAvailableRooms: 0, pendingPgs: 0, approvedPgs: 0 },
-            recentPgs: [],
-            recentBookings: [],
-          });
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadDashboard();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isOwner, token]);
-
-  const filteredPgs = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) return data.recentPgs;
-
-    return data.recentPgs.filter((pg) =>
-      [pg.title, pg.city, pg.area, pg.address, pg.location]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(term)
-    );
-  }, [data.recentPgs, searchTerm]);
-
-  const filteredBookings = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) return data.recentBookings;
-
-    return data.recentBookings.filter((booking) =>
-      [booking.pg?.title, booking.user?.username, booking.user?.name, booking.user?.email]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(term)
-    );
-  }, [data.recentBookings, searchTerm]);
+  const { data, error, loading, refreshing, lastUpdatedAt } = useDashboardData({
+    endpoint: "/owner/dashboard",
+    enabled: Boolean(token && isOwner),
+    initialData: emptyDashboard,
+    normalize: normalizeDashboard,
+    fallbackMessage: "Unable to load owner dashboard right now.",
+  });
 
   if (!token || !isOwner) return null;
 
   if (loading) {
-    return <PageSection><PageShell><SurfaceCard className="p-10 text-center text-ink-500">Loading owner dashboard...</SurfaceCard></PageShell></PageSection>;
+    return (
+      <DashboardLayout
+        role="owner"
+        kicker="Owner workspace"
+        title="Property Resource Dashboard"
+        description="Loading your property analytics..."
+        actions={
+          <>
+            <Link to="/owner/add" className="btn-primary">Add PG</Link>
+            <Link to="/owner/manage" className="btn-secondary">Manage PGs</Link>
+          </>
+        }
+      >
+        <SurfaceCard className="rounded-3xl border border-black/5 bg-white/85 p-10 text-center text-ink-500">
+          Loading owner dashboard...
+        </SurfaceCard>
+      </DashboardLayout>
+    );
   }
 
-  return (
-    <PageSection className="pt-8 sm:pt-12">
-      <PageShell className="space-y-8">
-        <div className="rounded-[2rem] bg-gradient-to-br from-slate-50 via-sky-50 to-cyan-100 p-6 shadow-[0_32px_90px_-48px_rgba(14,116,144,0.35)] sm:p-8 lg:p-10">
-          <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700">Owner dashboard</p>
-              <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-800" style={{ fontFamily: "var(--font-display)" }}>
-                Property Resource Dashboard
-              </h1>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-500">
-                Live overview of your listings, booking activity, approval progress, and available room capacity.
-              </p>
-            </div>
+  const stats = data.stats;
 
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <label className="relative block">
-                <Search className="pointer-events-none absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Search listing or resident"
-                  className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-slate-700 shadow-sm outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-500/20 sm:w-80"
-                />
-              </label>
-              <Link to="/owner/add" className="rounded-xl bg-cyan-600 px-6 py-3 text-center text-sm font-medium text-white shadow-md transition hover:bg-cyan-700">
-                <span className="inline-flex items-center gap-2"><PlusCircle size={16} />Add PG</span>
-              </Link>
-              <Link to="/owner/manage" className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-center text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
-                Manage PGs
-              </Link>
+  return (
+    <DashboardLayout
+      role="owner"
+      kicker="Owner workspace"
+      title="Property Resource Dashboard"
+      description="Live overview of listings, booking activity, revenue, approval progress, and room capacity."
+      actions={
+        <>
+          <div className="rounded-xl border border-slate-200 bg-white/75 px-4 py-3 text-right text-xs text-slate-500">
+            <p>{refreshing ? "Refreshing live data..." : "Auto-refresh every 30 seconds"}</p>
+            <p className="mt-1">Last sync: {formatDateTime(lastUpdatedAt)}</p>
+          </div>
+          <Link to="/owner/add" className="btn-primary">Add PG</Link>
+          <Link to="/owner/manage" className="btn-secondary">Manage PGs</Link>
+        </>
+      }
+    >
+      {error ? <InfoBanner tone="error">{error}</InfoBanner> : null}
+      <InfoBanner>
+        Dashboard data refreshes automatically after bookings and payments, so listing revenue and booking charts stay in sync without a manual reload.
+      </InfoBanner>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {[
+          { label: "Total Revenue", value: stats.totalRevenue, accent: "bg-emerald-100 text-emerald-700", icon: Coins, currency: true },
+          { label: "Collected Revenue", value: stats.paidEarnings, accent: "bg-teal-100 text-teal-700", icon: CheckCircle2, currency: true },
+          { label: "Total Bookings", value: stats.totalBookings, accent: "bg-indigo-100 text-indigo-700", icon: CalendarRange },
+          { label: "Available Rooms", value: stats.totalAvailableRooms, accent: "bg-cyan-100 text-cyan-700", icon: DoorOpen },
+          { label: "Pending Approval", value: stats.pendingPgs, accent: "bg-amber-100 text-amber-700", icon: Clock3 },
+          { label: "Approved Listings", value: stats.approvedPgs, accent: "bg-emerald-100 text-emerald-700", icon: Building2 },
+        ].map(({ label, value, accent, icon, currency }, index) => (
+          <AnimatedStatCard
+            key={label}
+            label={label}
+            value={value}
+            icon={icon}
+            accentClass={accent}
+            delayMs={index * 80}
+            formatter={currency ? formatDashboardCurrency : formatDashboardCount}
+          />
+        ))}
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <TrendChartCard
+          title="Monthly Revenue"
+          subtitle="Collected revenue over the last 6 months"
+          chart={data.charts.monthlyRevenue}
+          valueFormatter={formatDashboardCurrency}
+          emptyMessage="Paid bookings will appear here once transactions are completed."
+        />
+        <MultiBarChartCard
+          title="Booking Trends"
+          subtitle="Confirmed vs cancelled bookings by month"
+          chart={data.charts.bookingTrends}
+          valueFormatter={formatDashboardCount}
+          emptyMessage="Bookings for your listings will appear here automatically."
+        />
+        <DonutChartCard
+          title="Earnings Status"
+          subtitle="Paid, pending, and failed transaction amounts"
+          chart={data.charts.revenueBreakdown}
+          valueFormatter={formatDashboardCurrency}
+          emptyMessage="Payment status data will show up after the first transaction."
+        />
+        <DonutChartCard
+          title="Listing Approval"
+          subtitle="Pending vs approved listings"
+          chart={data.charts.approvalBreakdown}
+          valueFormatter={formatDashboardCount}
+          emptyMessage="Add a listing to start tracking approval status."
+        />
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <SurfaceCard className="rounded-3xl border border-black/5 bg-white/90 p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-slate-700">Top Listings</p>
+              <p className="mt-1 text-xs text-slate-500">Your strongest properties by paid revenue and booking activity</p>
+            </div>
+            <div className="rounded-2xl bg-sky-100 p-3 text-sky-700">
+              <Building2 size={20} />
             </div>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
-            {[
-              { label: "Total PGs", value: data.stats.totalPgs, accent: "bg-sky-100 text-sky-600", icon: Building2 },
-              { label: "Bookings", value: data.stats.totalBookings, accent: "bg-indigo-100 text-indigo-600", icon: CalendarRange },
-              { label: "Available Rooms", value: data.stats.totalAvailableRooms, accent: "bg-cyan-100 text-cyan-600", icon: DoorOpen },
-              { label: "Pending Approval", value: data.stats.pendingPgs, accent: "bg-amber-100 text-amber-600", icon: Clock3 },
-              { label: "Approved", value: data.stats.approvedPgs, accent: "bg-emerald-100 text-emerald-600", icon: CheckCircle2 },
-            ].map(({ label, value, accent, icon }) => (
-              <div key={label} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">{label}</p>
-                    <p className="mt-3 text-3xl font-semibold text-slate-800">{value}</p>
+          <div className="mt-5 space-y-3">
+            {data.topHostels.length ? (
+              data.topHostels.map((hostel) => (
+                <div key={hostel._id} className="rounded-2xl border border-slate-200 px-4 py-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-semibold text-slate-900">{hostel.rank}. {hostel.title}</p>
+                      <p className="mt-1 text-sm text-slate-500">{hostel.location}</p>
+                    </div>
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      {formatDashboardCurrency(hostel.paidRevenue)}
+                    </span>
                   </div>
-                  <div className={`rounded-2xl p-3 ${accent}`}>
-                    {createElement(icon, { size: 20 })}
+                  <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-3">
+                    <p>Bookings: <span className="font-semibold text-slate-900">{formatDashboardCount(hostel.totalBookings)}</span></p>
+                    <p>Occupied: <span className="font-semibold text-slate-900">{formatDashboardCount(hostel.occupancy)}</span></p>
+                    <p>Pending: <span className="font-semibold text-slate-900">{formatDashboardCurrency(hostel.pendingRevenue)}</span></p>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-300 px-4 py-8 text-sm text-slate-500">
+                No listing performance data is available yet.
               </div>
-            ))}
+            )}
           </div>
-        </div>
+        </SurfaceCard>
 
-        <div className="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-xl">
-          <div className="flex flex-col gap-3 border-b bg-slate-50 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <SurfaceCard className="rounded-3xl border border-black/5 bg-white/90 p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-slate-600">Your latest listings</p>
-              <p className="mt-1 text-xs text-slate-500">Showing {filteredPgs.length} of {data.recentPgs.length} listings</p>
+              <p className="text-sm font-semibold text-slate-700">Latest Listings</p>
+              <p className="mt-1 text-xs text-slate-500">Most recent PGs from your account and their approval state</p>
             </div>
             <Link to="/owner/manage" className="text-sm font-medium text-cyan-700 hover:text-cyan-800">
-              Open listing manager
+              Open manager
             </Link>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-100 text-left text-xs uppercase tracking-[0.18em] text-slate-500">
-                <tr>
-                  <th className="px-6 py-4 sm:px-8">Listing</th>
-                  <th className="px-6 py-4 sm:px-8">Location</th>
-                  <th className="px-6 py-4 sm:px-8">Price</th>
-                  <th className="px-6 py-4 sm:px-8">Rooms</th>
-                  <th className="px-6 py-4 text-right sm:px-8">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredPgs.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" className="px-6 py-10 text-center text-sm text-slate-500 sm:px-8">
-                      No PGs yet. Add your first one to get started.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredPgs.map((pg) => (
-                    <tr key={pg._id} className="transition hover:bg-cyan-50/60">
-                      <td className="px-6 py-5 sm:px-8">
-                        <p className="font-semibold text-slate-800">{pg.title}</p>
-                        <p className="mt-1 text-xs text-slate-500">{new Date(pg.createdAt).toLocaleDateString()}</p>
-                      </td>
-                      <td className="px-6 py-5 text-slate-600 sm:px-8">{pg.location || pg.address || [pg.area, pg.city].filter(Boolean).join(", ")}</td>
-                      <td className="px-6 py-5 text-slate-600 sm:px-8">Rs. {Number(pg.price || 0).toLocaleString()}</td>
-                      <td className="px-6 py-5 text-slate-600 sm:px-8">{pg.availableRooms ?? 0} available</td>
-                      <td className="px-6 py-5 text-right sm:px-8">
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
-                          pg.isApproved ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
-                        }`}>
-                          {pg.isApproved ? "Approved" : "Pending"}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          <div className="mt-5 space-y-3">
+            {data.recentPgs.length ? (
+              data.recentPgs.map((pg) => (
+                <div key={pg._id} className="rounded-2xl border border-slate-200 px-4 py-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-semibold text-slate-900">{pg.title || "Untitled listing"}</p>
+                      <p className="mt-1 text-sm text-slate-500">{pg.address || [pg.area, pg.city].filter(Boolean).join(", ") || "Location not added"}</p>
+                    </div>
+                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusPillClass(pg.isApproved, "approval")}`}>
+                      {pg.isApproved ? "Approved" : "Pending"}
+                    </span>
+                  </div>
+                  <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-3">
+                    <p>Price: <span className="font-semibold text-slate-900">{formatDashboardCurrency(pg.price)}</span></p>
+                    <p>Rooms: <span className="font-semibold text-slate-900">{formatDashboardCount(pg.availableRooms)}</span></p>
+                    <p>Created: <span className="font-semibold text-slate-900">{formatDate(pg.createdAt)}</span></p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-300 px-4 py-8 text-sm text-slate-500">
+                You have not created any PG listings yet.
+              </div>
+            )}
+          </div>
+        </SurfaceCard>
+      </div>
+
+      <SurfaceCard className="rounded-3xl border border-slate-100 bg-white/90 p-0 shadow-sm">
+        <div className="flex flex-col gap-3 border-b bg-slate-50 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+          <div>
+            <p className="text-sm font-medium text-slate-700">Recent Transactions</p>
+            <p className="mt-1 text-xs text-slate-500">Latest booking and payment activity across your listings</p>
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-xl">
-          <div className="flex flex-col gap-3 border-b bg-slate-50 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-            <div>
-              <p className="text-sm font-medium text-slate-600">Latest resident activity</p>
-              <p className="mt-1 text-xs text-slate-500">Showing {filteredBookings.length} of {data.recentBookings.length} bookings</p>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-100 text-left text-xs uppercase tracking-[0.18em] text-slate-500">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-100 text-left text-xs uppercase tracking-[0.18em] text-slate-500">
+              <tr>
+                <th className="px-6 py-4 sm:px-8">Resident</th>
+                <th className="px-6 py-4 sm:px-8">Listing</th>
+                <th className="px-6 py-4 sm:px-8">Amount</th>
+                <th className="px-6 py-4 sm:px-8">Payment</th>
+                <th className="px-6 py-4 sm:px-8">Check-in</th>
+                <th className="px-6 py-4 sm:px-8">Updated</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {data.recentTransactions.length === 0 ? (
                 <tr>
-                  <th className="px-6 py-4 sm:px-8">Resident</th>
-                  <th className="px-6 py-4 sm:px-8">Listing</th>
-                  <th className="px-6 py-4 sm:px-8">Contact</th>
-                  <th className="px-6 py-4 sm:px-8">Move-In Date</th>
+                  <td colSpan="6" className="px-6 py-10 text-center text-sm text-slate-500 sm:px-8">
+                    No transactions have been recorded for your listings yet.
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredBookings.length === 0 ? (
-                  <tr>
-                    <td colSpan="4" className="px-6 py-10 text-center text-sm text-slate-500 sm:px-8">
-                      No bookings yet. They will appear here automatically.
+              ) : (
+                data.recentTransactions.map((transaction) => (
+                  <tr key={transaction._id} className="transition hover:bg-cyan-50/60">
+                    <td className="px-6 py-5 sm:px-8">
+                      <p className="font-semibold text-slate-800">{transaction.user?.name || "Resident"}</p>
+                      <p className="mt-1 text-xs text-slate-500">{transaction.user?.email || transaction.user?.phone || "No contact info"}</p>
                     </td>
+                    <td className="px-6 py-5 text-slate-600 sm:px-8">{transaction.pg?.title || "PG not available"}</td>
+                    <td className="px-6 py-5 text-slate-600 sm:px-8">{formatDashboardCurrency(transaction.amount)}</td>
+                    <td className="px-6 py-5 sm:px-8">
+                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusPillClass(transaction.paymentStatus)}`}>
+                        {transaction.paymentStatus || "pending"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5 text-slate-600 sm:px-8">{formatDate(transaction.booking?.checkInDate)}</td>
+                    <td className="px-6 py-5 text-slate-600 sm:px-8">{formatDateTime(transaction.createdAt)}</td>
                   </tr>
-                ) : (
-                  filteredBookings.map((booking) => (
-                    <tr key={booking._id} className="transition hover:bg-cyan-50/60">
-                      <td className="px-6 py-5 sm:px-8">
-                        <p className="font-semibold text-slate-800">{booking.user?.username || booking.user?.name || "Resident"}</p>
-                      </td>
-                      <td className="px-6 py-5 text-slate-600 sm:px-8">{booking.pg?.title || "PG not available"}</td>
-                      <td className="px-6 py-5 text-slate-600 sm:px-8">{booking.user?.phone || booking.user?.email || "No contact info"}</td>
-                      <td className="px-6 py-5 text-slate-600 sm:px-8">{new Date(booking.checkInDate).toLocaleDateString()}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      </PageShell>
-    </PageSection>
+      </SurfaceCard>
+    </DashboardLayout>
   );
 }

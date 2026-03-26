@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { MessageSquare, Star } from "lucide-react";
 import { cn } from "../utils/cn";
+import { FALLBACK_PG_IMAGE } from "../utils/pg";
 
 export function PageSection({ className = "", children }) {
   return <section className={cn("page-section", className)}>{children}</section>;
@@ -33,6 +34,27 @@ export function PageIntro({ kicker, title, description, actions, className = "" 
 
 export function SurfaceCard({ className = "", children }) {
   return <div className={cn("surface-card", className)}>{children}</div>;
+}
+
+export function SafeImage({ src, fallbackSrc = FALLBACK_PG_IMAGE, onError, ...props }) {
+  const resolvedSrc = src || fallbackSrc;
+
+  return (
+    <img
+      {...props}
+      src={resolvedSrc}
+      onError={(event) => {
+        onError?.(event);
+
+        if (event.currentTarget.dataset.fallbackApplied === "true") {
+          return;
+        }
+
+        event.currentTarget.dataset.fallbackApplied = "true";
+        event.currentTarget.src = fallbackSrc;
+      }}
+    />
+  );
 }
 
 export function InfoBanner({ tone = "info", className = "", children }) {
@@ -176,8 +198,8 @@ export function PropertyCard({
     <Link to={to} className="group block h-full">
       <article className="surface-card h-full overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_60px_-30px_rgba(30,25,18,0.45)]">
         <div className="relative h-56 overflow-hidden bg-ink-100">
-          <img
-            src={listing.image || "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80"}
+          <SafeImage
+            src={listing.image || FALLBACK_PG_IMAGE}
             alt={listing.title}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />

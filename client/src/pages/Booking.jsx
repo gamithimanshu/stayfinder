@@ -9,8 +9,10 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../store/auth-context";
 import { API } from "../utils/api";
 import { normalizeListing } from "../utils/pg";
-import { FormField, InfoBanner, PageSection, PageShell, SelectInput, SurfaceCard, TextInput } from "../components/ui.jsx";
+import { FormField, InfoBanner, PageSection, PageShell, SafeImage, SelectInput, SurfaceCard, TextInput } from "../components/ui.jsx";
 import { toastError, toastSuccess } from "../utils/toast.js";
+
+const toArray = (value) => (Array.isArray(value) ? value : []);
 
 function getTomorrowDate() {
   const date = new Date();
@@ -85,7 +87,7 @@ export function Booking() {
   }, [checkInDate, durationMonths]);
 
   const monthlyPrice = pg?.price ?? 0;
-  const visibleAmenities = (pg?.amenities ?? []).slice(0, 4);
+  const visibleAmenities = toArray(pg?.amenities).slice(0, 4);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -131,6 +133,8 @@ export function Booking() {
     );
   }
 
+  const roomsLeft = Number(pg.availableRooms ?? 0);
+
   return (
     <PageSection className="pt-12 sm:pt-16">
       <PageShell className="space-y-8">
@@ -139,7 +143,7 @@ export function Booking() {
         </Link>
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <SurfaceCard className="overflow-hidden">
-            <img src={pg.image} alt={pg.title} className="h-72 w-full object-cover sm:h-96" />
+            <SafeImage src={pg.image} alt={pg.title} className="h-72 w-full object-cover sm:h-96" />
             <div className="space-y-4 p-8">
               <span className="section-kicker">Secure booking</span>
               <h1 className="text-4xl tracking-tight text-ink-900" style={{ fontFamily: "var(--font-display)" }}>
@@ -148,21 +152,21 @@ export function Booking() {
               <p className="text-sm leading-7 text-ink-500">
                 Confirm the booking details here, then continue to a separate payment page to complete the checkout flow.
               </p>
-              <div className="rounded-lg border border-brand-100 bg-sky-50/60 p-5">
+              <div className="rounded-3xl border border-black/5 bg-sky-50/60 p-5">
                 <h2 className="text-xl font-semibold text-ink-900">{pg.title}</h2>
                 <p className="mt-2 text-sm text-ink-500">{pg.location}</p>
                 <p className="mt-4 text-2xl font-bold text-ink-900">Rs. {pg.price.toLocaleString()}<span className="text-sm font-medium text-ink-400"> /month</span></p>
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-md border border-brand-100 bg-white p-4">
+                <div className="rounded-2xl border border-black/5 bg-white p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-400">Room Type</p>
                   <p className="mt-2 text-sm font-semibold text-ink-900">{pg.roomType || "Standard Room"}</p>
                 </div>
-                <div className="rounded-md border border-brand-100 bg-white p-4">
+                <div className="rounded-2xl border border-black/5 bg-white p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-400">Available Rooms</p>
                   <p className="mt-2 text-sm font-semibold text-ink-900">{pg.availableRooms}</p>
                 </div>
-                <div className="rounded-md border border-brand-100 bg-white p-4">
+                <div className="rounded-2xl border border-black/5 bg-white p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-400">Stay Type</p>
                   <p className="mt-2 text-sm font-semibold capitalize text-ink-900">{pg.gender} / monthly</p>
                 </div>
@@ -180,7 +184,7 @@ export function Booking() {
             </div>
           </SurfaceCard>
 
-          <div>
+          <div className="xl:sticky xl:top-24 h-fit">
             <SurfaceCard className="p-8">
               <form onSubmit={handleSubmit} className="space-y-5">
                 <FormField label="Check-in date">
@@ -203,7 +207,7 @@ export function Booking() {
                   </div>
                 </FormField>
 
-                <div className="rounded-lg border border-brand-100 bg-ink-50/70 p-5">
+                <div className="rounded-3xl border border-black/5 bg-ink-50/70 p-5">
                   <p className="text-sm font-semibold text-ink-900">Booking summary</p>
                   <div className="flex items-center justify-between gap-4 border-b border-ink-100 pb-4">
                     <span className="mt-4 inline-flex items-center gap-2 text-sm text-ink-500">
@@ -242,7 +246,7 @@ export function Booking() {
                   </div>
                 </div>
 
-                <button type="submit" className="btn-primary w-full" disabled={submitting || Number(pg.availableRooms ?? 0) < 1}>
+                <button type="submit" className="btn-primary w-full" disabled={submitting || roomsLeft < 1}>
                   {submitting ? "Creating booking..." : "Continue to Payment"}
                 </button>
 
@@ -250,8 +254,8 @@ export function Booking() {
                   Your booking will be created first with pending payment, then you will continue to a dedicated payment page.
                 </InfoBanner>
 
-                {Number(pg.availableRooms ?? 0) < 1 ? <InfoBanner tone="error">No rooms are currently available for this PG.</InfoBanner> : null}
-                {pageMessage ? <InfoBanner tone="info">{pageMessage}</InfoBanner> : null}
+                {roomsLeft < 1 ? <InfoBanner tone="error">No rooms are currently available for this PG.</InfoBanner> : null}
+                {pageMessage ? <InfoBanner tone="error">{pageMessage}</InfoBanner> : null}
               </form>
             </SurfaceCard>
           </div>

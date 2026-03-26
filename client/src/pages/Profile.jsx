@@ -158,10 +158,11 @@ export function Profile() {
 
           <form onSubmit={handleSubmit}>
             <SurfaceCard className="space-y-6 p-8">
-            <div>
-              <p className="text-sm font-semibold text-ink-500">Edit profile</p>
-              <h2 className="mt-1 panel-title">Update your details</h2>
-            </div>
+              <div>
+                <p className="text-sm font-semibold text-ink-500">Edit profile</p>
+                <h2 className="mt-1 panel-title">Update your details</h2>
+                <p className="mt-2 text-sm text-ink-500">Changes will be saved to your account and used in future bookings.</p>
+              </div>
 
             <FormField label="Name">
               <div className="relative">
@@ -203,9 +204,9 @@ export function Profile() {
               </div>
             </FormField>
 
-            <button type="submit" className="btn-primary w-full" disabled={saving}>
-              {saving ? "Saving..." : "Save Changes"}
-            </button>
+              <button type="submit" className="btn-primary w-full" disabled={saving}>
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
             </SurfaceCard>
           </form>
         </div>
