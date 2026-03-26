@@ -1,8 +1,6 @@
-import { createElement, useEffect, useMemo, useState } from "react";
+import { createElement, useCallback, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "./auth-context.js";
-import { apiUrl } from "../utils/api.js";
-
-const USER_URL = apiUrl("/api/auth/user");
+import { API } from "../utils/api.js";
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem("token") || "");
@@ -11,51 +9,50 @@ export const AuthProvider = ({ children }) => {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
-  const storeTokenInLS = (serverToken, userData = null) => {
+  const syncUserInLS = useCallback((userData) => {
+    if (!userData) {
+      localStorage.removeItem("user");
+      setUser(null);
+      return;
+    }
+
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
+  }, []);
+
+  const storeTokenInLS = useCallback((serverToken, userData = null) => {
     if (!serverToken) return;
     localStorage.setItem("token", serverToken);
     setToken(serverToken);
 
     if (userData) {
-      localStorage.setItem("user", JSON.stringify(userData));
-      setUser(userData);
+      syncUserInLS(userData);
     }
-  };
+  }, [syncUserInLS]);
 
-  const logoutUser = () => {
+  const logoutUser = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setToken("");
     setUser(null);
-  };
+  }, []);
 
   useEffect(() => {
     if (!token) return;
 
     const fetchUser = async () => {
       try {
-        const response = await fetch(USER_URL, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          logoutUser();
-          return;
-        }
-
-        const data = await response.json();
+        const { data } = await API.get("/auth/user");
         const loggedInUser = data?.user || null;
-        setUser(loggedInUser);
-        localStorage.setItem("user", JSON.stringify(loggedInUser));
+        syncUserInLS(loggedInUser);
       } catch (error) {
         console.error("Failed to fetch user:", error);
+        logoutUser();
       }
     };
 
     fetchUser();
-  }, [token]);
+  }, [logoutUser, syncUserInLS, token]);
 
   const isLoggedIn = Boolean(token);
 
@@ -63,14 +60,13 @@ export const AuthProvider = ({ children }) => {
     () => ({
       token,
       user,
-      isLoggedIn: Boolean(token),
+      isLoggedIn,
       isBootstrapping: false,
       storeTokenInLS,
-      storetokenInLS: storeTokenInLS,
+      syncUserInLS,
       logoutUser,
-      LogoutUser: logoutUser,
     }),
-    [token, user]
+    [token, user, isLoggedIn, logoutUser, storeTokenInLS, syncUserInLS]
   );
 
   return createElement(AuthContext.Provider, { value }, children);

@@ -10,18 +10,21 @@ const authMiddleware = async (req, res, next) => {
   }
 
   try {
-    const isVerified = jwt.verify(token, process.env.JWT_SECRET);
-    const userData = await User.findOne({ email: isVerified.email }).select({
-      password: 0,
-    });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userData = await User.findById(decoded.userId).select({ password: 0 });
 
     if (!userData) {
       return res.status(401).json({ message: "Unauthorized: User not found" });
     }
 
+    if (userData.isAdmin && userData.role !== "admin") {
+      userData.role = "admin";
+    }
+
     req.user = userData;
     req.token = token;
     req.userId = userData._id;
+    req.userRole = userData.role || (userData.isAdmin ? "admin" : "user");
     return next();
   } catch (error) {
     return res.status(401).json({ message: "Unauthorized: Invalid token" });

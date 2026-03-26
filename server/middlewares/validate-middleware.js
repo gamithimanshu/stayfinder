@@ -6,6 +6,7 @@ const validate = (schema) => async (req, res, next) => {
   } catch (error) {
     error.status = 400;
     error.message = "Validation failed";
+    error.details = error.issues?.map((issue) => issue.message) || error.details || [];
     return next(error);
   }
 };

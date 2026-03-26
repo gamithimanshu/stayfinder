@@ -4,9 +4,9 @@ const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema(
   {
-    username: {
+    name: {
       type: String,
-      required: [true, "Username is required"],
+      required: [true, "Name is required"],
       trim: true,
     },
     email: {
@@ -16,25 +16,55 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    phone: {
-      type: String,
-      required: [true, "Phone is required"],
-      trim: true,
-    },
     password: {
       type: String,
       required: [true, "Password is required"],
       minlength: 6,
       select: false,
     },
+    phone: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    role: {
+      type: String,
+      enum: ["user", "owner", "admin"],
+      default: "user",
+    },
     isAdmin: {
       type: Boolean,
       default: false,
     },
+    profileImage: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+  },
+  {
+    timestamps: true,
+    collection: "users",
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 
+userSchema.virtual("username")
+  .get(function getUsername() {
+    return this.name;
+  })
+  .set(function setUsername(value) {
+    this.name = value;
+  });
+
 userSchema.pre("save", async function () {
+  if (!this.role || this.isAdmin) {
+    this.role = this.isAdmin ? "admin" : "user";
+  }
+
+  this.isAdmin = this.role === "admin";
+
   if (!this.isModified("password")) return;
   this.password = await bcrypt.hash(this.password, 10);
 });
@@ -49,7 +79,8 @@ userSchema.methods.generateToken = async function () {
       {
         userId: this._id.toString(),
         email: this.email,
-        isAdmin: this.isAdmin,
+        role: this.role || (this.isAdmin ? "admin" : "user"),
+        isAdmin: this.isAdmin || this.role === "admin",
       },
       process.env.JWT_SECRET,
       { expiresIn: "30d" }
@@ -64,5 +95,13 @@ userSchema.methods.generateAuthToken = async function () {
   return this.generateToken();
 };
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
+
+User.syncLegacyAdminRoles = async function syncLegacyAdminRoles() {
+  await this.updateMany(
+    { isAdmin: true, role: { $ne: "admin" } },
+    { $set: { role: "admin" } }
+  );
+};
+
 module.exports = User;

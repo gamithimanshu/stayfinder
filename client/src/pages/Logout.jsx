@@ -8,7 +8,13 @@ export const Logout = () => {
 
   useEffect(() => {
     logoutUser();
-    navigate("/login");
+    navigate("/login", {
+      replace: true,
+      state: {
+        flashMessage: "Logged out successfully.",
+        flashTone: "success",
+      },
+    });
   }, [logoutUser, navigate]);
 
   return null;

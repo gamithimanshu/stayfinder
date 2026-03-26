@@ -1,0 +1,137 @@
+const Booking = require("../models/booking-model");
+const AdminLog = require("../models/admin-log-model");
+const ContactMessage = require("../models/contact-model");
+const Pg = require("../models/pg-model");
+const Review = require("../models/review-model");
+const User = require("../models/user-models");
+const Wishlist = require("../models/wishlist-model");
+
+const getAdminDashboard = async (req, res, next) => {
+  try {
+    const [totalUsers, totalMessages, pendingPgs, approvedPgs] = await Promise.all([
+      User.countDocuments({ $nor: [{ role: "admin" }, { isAdmin: true }] }),
+      ContactMessage.countDocuments(),
+      Pg.countDocuments({ isApproved: false }),
+      Pg.countDocuments({ isApproved: true }),
+    ]);
+
+    const [recentPendingPgs, recentMessages] = await Promise.all([
+      Pg.find({ isApproved: false }).populate("ownerId", "name email role isAdmin").sort({ createdAt: -1 }).limit(5),
+      ContactMessage.find().sort({ createdAt: -1 }).limit(5),
+    ]);
+
+    return res.status(200).json({
+      stats: {
+        totalUsers,
+        totalMessages,
+        pendingPgs,
+        approvedPgs,
+      },
+      recentPendingPgs,
+      recentMessages,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const getPendingPgs = async (req, res, next) => {
+  try {
+    const pgs = await Pg.find({ isApproved: false })
+      .populate("ownerId", "name email phone role isAdmin")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({ pgs });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const approvePg = async (req, res, next) => {
+  try {
+    const pg = await Pg.findByIdAndUpdate(
+      req.params.id,
+      { isApproved: true },
+      { new: true }
+    ).populate("ownerId", "name email role isAdmin");
+
+    if (!pg) {
+      return res.status(404).json({ message: "PG not found" });
+    }
+
+    await AdminLog.create({
+      adminId: req.userId,
+      action: `Approved PG ${pg._id}`,
+    });
+
+    return res.status(200).json({
+      message: "PG approved successfully",
+      pg,
+    });
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(404).json({ message: "PG not found" });
+    }
+
+    return next(error);
+  }
+};
+
+const getUsers = async (req, res, next) => {
+  try {
+    const users = await User.find().select("-password").sort({ createdAt: -1 });
+    return res.status(200).json({ users });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+
+    if (String(req.userId) === String(userId)) {
+      return res.status(400).json({ message: "You cannot delete your own admin account" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const ownerPgs = await Pg.find({ ownerId: userId }).select("_id");
+    const ownerPgIds = ownerPgs.map((pg) => pg._id);
+
+    await Promise.all([
+      Booking.deleteMany({ userId: userId }),
+      Wishlist.deleteMany({ userId: userId }),
+      Review.deleteMany({ userId: userId }),
+      ownerPgIds.length ? Booking.deleteMany({ pgId: { $in: ownerPgIds } }) : Promise.resolve(),
+      ownerPgIds.length ? Wishlist.deleteMany({ pgId: { $in: ownerPgIds } }) : Promise.resolve(),
+      ownerPgIds.length ? Review.deleteMany({ pgId: { $in: ownerPgIds } }) : Promise.resolve(),
+      Pg.deleteMany({ ownerId: userId }),
+      User.findByIdAndDelete(userId),
+    ]);
+
+    await AdminLog.create({
+      adminId: req.userId,
+      action: `Deleted user ${userId}`,
+    });
+
+    return res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return next(error);
+  }
+};
+
+module.exports = {
+  getAdminDashboard,
+  getPendingPgs,
+  approvePg,
+  getUsers,
+  deleteUser,
+};

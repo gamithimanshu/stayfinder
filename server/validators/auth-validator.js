@@ -1,11 +1,18 @@
 const { z } = require("zod");
 
 const signupSchema = z.object({
-  username: z
-    .string({ required_error: "Name is required" })
+  name: z
+    .string()
     .trim()
     .min(3, { message: "Name must be at least of 3 characters" })
-    .max(255, { message: "Name must not be more than 255 characters" }),
+    .max(255, { message: "Name must not be more than 255 characters" })
+    .optional(),
+  username: z
+    .string()
+    .trim()
+    .min(3, { message: "Name must be at least of 3 characters" })
+    .max(255, { message: "Name must not be more than 255 characters" })
+    .optional(),
   email: z
     .string({ required_error: "Email is required" })
     .trim()
@@ -21,6 +28,11 @@ const signupSchema = z.object({
     .string({ required_error: "Password is required" })
     .min(7, { message: "Password must be at least 7 characters" })
     .max(1024, "Password can't be greater than 1024 characters"),
+  role: z.enum(["user", "owner", "admin"]).optional(),
+  profileImage: z.string().trim().optional(),
+}).refine((data) => Boolean(data.name || data.username), {
+  message: "Name is required",
+  path: ["name"],
 });
 
 const loginSchema = z.object({

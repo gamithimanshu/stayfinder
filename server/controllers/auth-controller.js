@@ -1,10 +1,15 @@
 const User = require("../models/user-models");
+const createHttpError = require("../utils/app-error");
 
-const createHttpError = (status, message, details = []) => {
-  const error = new Error(message);
-  error.status = status;
-  error.details = details;
-  return error;
+const sanitizeUser = (user) => {
+  if (!user) return null;
+
+  const plainUser = typeof user.toObject === "function" ? user.toObject() : { ...user };
+  delete plainUser.password;
+  if (plainUser.isAdmin) {
+    plainUser.role = "admin";
+  }
+  return plainUser;
 };
 
 const home = async (req, res, next) => {
@@ -17,8 +22,9 @@ const home = async (req, res, next) => {
 
 const register = async (req, res, next) => {
   try {
-    const { username, email, phone, password } = req.body;
+    const { username, name, email, phone, password, role, profileImage } = req.body;
     const normalizedEmail = email.trim().toLowerCase();
+    const normalizedRole = role === "owner" ? "owner" : "user";
 
     const userExist = await User.findOne({ email: normalizedEmail });
     if (userExist) {
@@ -26,16 +32,19 @@ const register = async (req, res, next) => {
     }
 
     const userCreated = await User.create({
-      username,
+      name: (name || username || "").trim(),
       email: normalizedEmail,
-      phone,
+      phone: phone?.trim() ?? "",
       password,
+      role: normalizedRole,
+      profileImage: profileImage?.trim() ?? "",
     });
 
     return res.status(201).json({
       message: "Registration Successful",
       userId: userCreated._id.toString(),
       token: await userCreated.generateToken(),
+      user: sanitizeUser(userCreated),
     });
   } catch (error) {
     if (error.code === 11000) {
@@ -67,6 +76,7 @@ const login = async (req, res, next) => {
       message: "Login Successful",
       token: await userExist.generateToken(),
       userId: userExist._id.toString(),
+      user: sanitizeUser(userExist),
     });
   } catch (error) {
     return next(error);

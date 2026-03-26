@@ -1,0 +1,350 @@
+import { useEffect, useMemo, useState } from "react";
+import {
+  CalendarCheck2,
+  Heart,
+  MapPin,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Users,
+} from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../store/auth-context";
+import { API } from "../utils/api";
+import { getReviewStats, normalizeListing } from "../utils/pg";
+import { FormField, InfoBanner, PageSection, PageShell, RatingPill, SelectInput, SurfaceCard, TextArea } from "../components/ui.jsx";
+import { toastError, toastSuccess } from "../utils/toast.js";
+
+export function PGDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { token, user } = useAuth();
+  const [pg, setPg] = useState(null);
+  const [selectedImage, setSelectedImage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [pageMessage, setPageMessage] = useState("");
+  const [pageMessageTone, setPageMessageTone] = useState("info");
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [reviewRating, setReviewRating] = useState("5");
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewLoading, setReviewLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPg = async () => {
+      setLoading(true);
+
+      try {
+        const { data } = await API.get(`/pg/${id}`);
+        const item = data?.pg ?? data?.data ?? data;
+        const normalized = normalizeListing(item);
+
+        if (!cancelled) {
+          setPg(normalized);
+          setSelectedImage(normalized.images[0] ?? normalized.image);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setPageMessageTone("error");
+          setPageMessage(error?.response?.data?.message || "We could not find that PG right now.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadPg();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const averageRating = useMemo(() => {
+    return getReviewStats(pg?.reviews);
+  }, [pg]);
+  const galleryImages = pg?.images?.length ? pg.images : [pg?.image].filter(Boolean);
+  const amenities = Array.isArray(pg?.amenities) ? pg.amenities : [];
+  const reviews = Array.isArray(pg?.reviews) ? pg.reviews : [];
+
+  const ensureAuthenticated = () => {
+    if (token) return true;
+    navigate("/login");
+    return false;
+  };
+
+  const handleWishlist = async () => {
+    if (!pg || !ensureAuthenticated()) return;
+
+    setWishlistLoading(true);
+    setPageMessage("");
+    setPageMessageTone("info");
+
+    try {
+      const { data } = await API.post("/wishlist/add", { pgId: pg.id });
+      setPageMessageTone("success");
+      setPageMessage(data?.message || "Added to wishlist successfully.");
+      toastSuccess(data?.message || "Added to wishlist successfully.");
+    } catch (error) {
+      const message = error?.response?.data?.message || "Unable to add to wishlist.";
+      setPageMessageTone("error");
+      setPageMessage(message);
+      toastError(message);
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  const handleBooking = async () => {
+    if (!pg || !ensureAuthenticated()) return;
+
+    setBookingLoading(true);
+    setPageMessage("");
+    setPageMessageTone("info");
+
+    try {
+      navigate(`/book/${pg.id}`);
+    } catch {
+      setPageMessage("Booking page could not be opened right now.");
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  const handleReviewSubmit = async (event) => {
+    event.preventDefault();
+    if (!pg || !ensureAuthenticated()) return;
+
+    setReviewLoading(true);
+    setPageMessage("");
+    setPageMessageTone("info");
+
+    try {
+      const { data } = await API.post("/review/add", {
+          pgId: pg.id,
+          rating: Number(reviewRating),
+          comment: reviewComment,
+      });
+
+      setPg((current) => {
+        const newReviews = Array.isArray(data?.reviews) && data.reviews.length > 0 
+          ? data.reviews 
+          : [...(current.reviews || []), { 
+              rating: Number(reviewRating), 
+              comment: reviewComment, 
+              name: user?.username || user?.name || "Resident" 
+            }];
+        return {
+          ...current,
+          reviews: newReviews
+        };
+      });
+      setReviewComment("");
+      setReviewRating("5");
+      setPageMessageTone("success");
+      setPageMessage(data?.message || "Review saved successfully.");
+      toastSuccess(data?.message || "Review saved successfully.");
+    } catch (error) {
+      const message = error?.response?.data?.message || "Unable to save review.";
+      setPageMessageTone("error");
+      setPageMessage(message);
+      toastError(message);
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <PageSection><PageShell><SurfaceCard className="p-10 text-center text-ink-500">Loading PG details...</SurfaceCard></PageShell></PageSection>;
+  }
+
+  if (!pg) {
+    return (
+      <PageSection>
+        <PageShell>
+          <SurfaceCard className="space-y-4 p-10 text-center">
+            <p className="text-ink-600">{pageMessage || "PG not found."}</p>
+            <div>
+              <Link to="/listings" className="btn-secondary">Back to listings</Link>
+            </div>
+          </SurfaceCard>
+        </PageShell>
+      </PageSection>
+    );
+  }
+
+  return (
+    <>
+      <PageSection className="pt-12 sm:pt-16">
+        <PageShell className="space-y-8">
+          <Link to="/listings" className="inline-flex items-center gap-2 text-sm font-medium text-brand-700">
+            Back to listings
+          </Link>
+          {pageMessage ? <InfoBanner tone={pageMessageTone}>{pageMessage}</InfoBanner> : null}
+
+          <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+            <div className="space-y-4">
+              <SurfaceCard className="overflow-hidden">
+                <img
+                  src={selectedImage || pg.image}
+                  alt={pg.title}
+                  className="h-[22rem] w-full object-cover sm:h-[32rem]"
+                />
+              </SurfaceCard>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {galleryImages.map((image) => (
+                  <button
+                    key={image}
+                    type="button"
+                    className={`overflow-hidden rounded-2xl border ${selectedImage === image ? "border-brand-400 ring-4 ring-brand-100" : "border-white/70"} bg-white`}
+                    onClick={() => setSelectedImage(image)}
+                    aria-label={`View image for ${pg.title}`}
+                  >
+                    <img src={image} alt={pg.title} className="h-28 w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <SurfaceCard className="p-8">
+                <span className="section-kicker">Verified PG detail</span>
+                <h1 className="mt-5 text-4xl font-black tracking-tight text-ink-900">{pg.title}</h1>
+                <div className="mt-5 flex flex-wrap items-center gap-3">
+                  <span className="rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white">
+                    Rs. {pg.price.toLocaleString()}/month
+                  </span>
+                  <RatingPill averageRating={averageRating.averageRating} reviewCount={averageRating.reviewCount} />
+                  <span className="badge-soft">
+                    <Users size={14} />
+                    {pg.gender}
+                  </span>
+                </div>
+                <div className="mt-5 flex items-center gap-2 text-sm text-ink-500">
+                  <MapPin size={16} />
+                  {pg.location}
+                </div>
+                <p className="mt-6 text-sm leading-7 text-ink-500">{pg.description}</p>
+
+                <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl bg-brand-50 p-4 text-sm text-brand-800">
+                    <ShieldCheck size={18} className="mb-3" />
+                    Verified stay
+                  </div>
+                  <div className="rounded-2xl bg-ink-50 p-4 text-sm text-ink-700">
+                    <Sparkles size={18} className="mb-3" />
+                    Clean amenities
+                  </div>
+                  <div className="rounded-2xl bg-ink-50 p-4 text-sm text-ink-700">
+                    <Users size={18} className="mb-3" />
+                    {pg.availableRooms} rooms left
+                  </div>
+                </div>
+
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <button type="button" className="btn-primary flex-1" onClick={handleBooking} disabled={bookingLoading || Number(pg.availableRooms ?? 0) < 1}>
+                    <CalendarCheck2 size={18} />
+                    {bookingLoading ? "Booking..." : "Book Now"}
+                  </button>
+                  <button type="button" className="btn-secondary flex-1" onClick={handleWishlist} disabled={wishlistLoading}>
+                    <Heart size={18} />
+                    {wishlistLoading ? "Saving..." : "Add to Wishlist"}
+                  </button>
+                </div>
+
+                {Number(pg.availableRooms ?? 0) < 1 ? <InfoBanner tone="error" className="mt-4">This PG currently has no rooms available.</InfoBanner> : null}
+              </SurfaceCard>
+            </div>
+          </div>
+        </PageShell>
+      </PageSection>
+
+      <PageSection>
+        <PageShell className="space-y-8">
+          <SurfaceCard className="p-8">
+            <h2 className="text-2xl font-semibold text-ink-900">Everything included for daily comfort</h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {amenities.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-brand-200 bg-brand-50/60 px-4 py-6 text-sm text-ink-500">
+                  No amenities listed yet.
+                </div>
+              ) : amenities.map((amenity) => (
+                <div key={amenity} className="rounded-2xl border border-ink-100 bg-ink-50 px-4 py-4 text-sm font-medium text-ink-700">
+                  <div className="mb-3 text-brand-700">
+                    <ShieldCheck size={18} />
+                  </div>
+                  {amenity}
+                </div>
+              ))}
+            </div>
+          </SurfaceCard>
+
+          <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+            <SurfaceCard className="p-8">
+              <h2 className="text-2xl font-semibold text-ink-900">Leave a review</h2>
+              <p className="mt-2 text-sm text-ink-500">Share your stay experience to help future residents.</p>
+              <form className="mt-6 space-y-5" onSubmit={handleReviewSubmit}>
+                <FormField label="Rating">
+                  <div className="flex items-center gap-2 mb-2">
+                    {[5,4,3,2,1].map((star) => (
+                      <Star
+                        key={star}
+                        size={24}
+                        fill={Number(reviewRating) >= star ? '#fbbf24' : 'none'}
+                        strokeWidth={2}
+                        className={`cursor-pointer transition-colors ${Number(reviewRating) >= star ? 'text-yellow-400' : 'text-gray-300'} hover:text-yellow-400`}
+                        onClick={() => setReviewRating(star.toString())}
+                      />
+                    ))}
+                    <span className="ml-2 font-medium">{reviewRating} stars</span>
+                  </div>
+                  <input type="range" min="1" max="5" step="1" value={reviewRating} onChange={(event) => setReviewRating(event.target.value)} className="w-full h-2 cursor-pointer appearance-none rounded-lg bg-gray-200 accent-brand-500" />
+                </FormField>
+                <FormField label="Comment">
+                  <TextArea rows="4" placeholder="Share your stay experience" value={reviewComment} onChange={(event) => setReviewComment(event.target.value)} required />
+                </FormField>
+                <button type="submit" className="btn-primary w-full" disabled={reviewLoading}>
+                  {reviewLoading ? "Saving..." : "Add Review"}
+                </button>
+              </form>
+            </SurfaceCard>
+
+            <SurfaceCard className="p-8">
+              <h2 className="text-2xl font-semibold text-ink-900">What residents are saying</h2>
+              <div className="mt-6 grid gap-4">
+                {reviews.length === 0 ? (
+                  <p className="text-sm text-ink-500">No reviews yet. Be the first to share your experience.</p>
+                ) : (
+                  reviews.map((review) => (
+                    <article key={review.id ?? review._id ?? review.name} className="rounded-2xl border border-ink-100 bg-ink-50 p-5">
+                      <div className="flex items-start justify-between gap-4">
+                        <h3 className="text-base font-semibold text-ink-900">{review.name ?? user?.name ?? "Resident"}</h3>
+                        {Number.isFinite(Number(review.rating)) && Number(review.rating) > 0 ? (
+                          <div className="badge-soft">
+                            <Star size={14} fill="currentColor" />
+                            {Number(review.rating).toFixed(1)}
+                          </div>
+                        ) : (
+                          <div className="rounded-full bg-ink-100 px-3 py-1.5 text-sm font-medium text-ink-500">
+                            Not rated
+                          </div>
+                        )}
+                      </div>
+                      <p className="mt-3 text-sm leading-7 text-ink-500">
+                        {review.comment ?? "Comfortable stay with a smooth experience."}
+                      </p>
+                    </article>
+                  ))
+                )}
+              </div>
+            </SurfaceCard>
+          </div>
+        </PageShell>
+      </PageSection>
+    </>
+  );
+}
