@@ -15,6 +15,7 @@ import { OwnerDashboard } from "./pages/OwnerDashboard";
 import { AddPG } from "./pages/AddPG";
 import { ManagePG } from "./pages/ManagePG";
 import { AdminDashboard } from "./pages/AdminDashboard";
+import { AdminBookings } from "./pages/AdminBookings";
 import { ApprovePG } from "./pages/ApprovePG";
 import { Users } from "./pages/Users";
 import { Navbar } from "./components/Navbar";
@@ -41,6 +42,7 @@ const App = () => {
             <Route path="/owner/add" element={<AddPG />} />
             <Route path="/owner/manage" element={<ManagePG />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/bookings" element={<AdminBookings />} />
             <Route path="/admin/approve" element={<ApprovePG />} />
             <Route path="/admin/users" element={<Users />} />
             <Route path="/add-listing" element={<AddPG />} />

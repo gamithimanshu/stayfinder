@@ -8,9 +8,8 @@ import {
   DonutChartCard,
   MultiBarChartCard,
   TrendChartCard,
-  formatDashboardCount,
-  formatDashboardCurrency,
 } from "../components/dashboard/DashboardCharts.jsx";
+import { formatDashboardCount, formatDashboardCurrency } from "../components/dashboard/dashboardFormatters.js";
 import { InfoBanner, SurfaceCard } from "../components/ui.jsx";
 import { useDashboardData } from "../hooks/useDashboardData.js";
 
@@ -20,6 +19,8 @@ const emptyDashboard = {
   stats: {
     totalPgs: 0,
     totalBookings: 0,
+    confirmedBookings: 0,
+    pendingBookingStatusCount: 0,
     activeBookings: 0,
     cancelledBookings: 0,
     totalAvailableRooms: 0,
@@ -79,6 +80,8 @@ function normalizeDashboard(result) {
     stats: {
       totalPgs: safeNumber(result?.stats?.totalPgs),
       totalBookings: safeNumber(result?.stats?.totalBookings),
+      confirmedBookings: safeNumber(result?.stats?.confirmedBookings),
+      pendingBookingStatusCount: safeNumber(result?.stats?.pendingBookingStatusCount),
       activeBookings: safeNumber(result?.stats?.activeBookings),
       cancelledBookings: safeNumber(result?.stats?.cancelledBookings),
       totalAvailableRooms: safeNumber(result?.stats?.totalAvailableRooms),
@@ -206,7 +209,7 @@ export function OwnerDashboard() {
         />
         <MultiBarChartCard
           title="Booking Trends"
-          subtitle="Confirmed vs cancelled bookings by month"
+          subtitle="Pending, confirmed, and cancelled bookings by month"
           chart={data.charts.bookingTrends}
           valueFormatter={formatDashboardCount}
           emptyMessage="Bookings for your listings will appear here automatically."

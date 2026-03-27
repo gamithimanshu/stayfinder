@@ -381,7 +381,9 @@ export function ManagePG() {
                             <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
                               booking.bookingStatus === "cancelled"
                                 ? "bg-rose-100 text-rose-700"
-                                : "bg-sky-100 text-sky-700"
+                                : booking.bookingStatus === "pending"
+                                  ? "bg-amber-100 text-amber-700"
+                                  : "bg-sky-100 text-sky-700"
                             }`}>
                               Booking: {booking.bookingStatus}
                             </span>

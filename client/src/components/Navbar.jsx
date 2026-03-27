@@ -102,6 +102,7 @@ export function Navbar() {
                 {isOwner ? <Link to="/owner/add" className={baseLink} onClick={() => setMobileOpen(false)}>Add PG</Link> : null}
                 {isOwner ? <Link to="/owner/manage" className={baseLink} onClick={() => setMobileOpen(false)}>Manage PGs</Link> : null}
                 {isAdmin ? <Link to="/admin" className={baseLink} onClick={() => setMobileOpen(false)}>Admin Panel</Link> : null}
+                {isAdmin ? <Link to="/admin/bookings" className={baseLink} onClick={() => setMobileOpen(false)}>Bookings</Link> : null}
                 {isAdmin ? <Link to="/admin/approve" className={baseLink} onClick={() => setMobileOpen(false)}>Approve PG</Link> : null}
                 {isAdmin ? <Link to="/admin/users" className={baseLink} onClick={() => setMobileOpen(false)}>Users</Link> : null}
                 <Link to="/logout" className="btn-primary mt-1" onClick={() => setMobileOpen(false)}>Logout</Link>

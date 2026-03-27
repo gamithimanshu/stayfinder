@@ -179,6 +179,7 @@ const getBookingStatusSummary = async (ownerId) => {
       return accumulator;
     },
     {
+      pending: { count: 0, grossAmount: 0 },
       confirmed: { count: 0, grossAmount: 0 },
       cancelled: { count: 0, grossAmount: 0 },
     }
@@ -255,12 +256,18 @@ const getMonthlyBookingChart = async (ownerId, months = MONTH_WINDOW) => {
     },
   ]);
 
+  const pendingByKey = {};
   const confirmedByKey = {};
   const cancelledByKey = {};
 
   bookingRows.forEach((row) => {
     const key = `${row._id.year}-${row._id.month}`;
     const count = safeNumber(row.count);
+
+    if (row._id.status === "pending") {
+      pendingByKey[key] = count;
+      return;
+    }
 
     if (row._id.status === "cancelled") {
       cancelledByKey[key] = count;
@@ -274,6 +281,11 @@ const getMonthlyBookingChart = async (ownerId, months = MONTH_WINDOW) => {
     buckets,
     series: [
       {
+        label: "Pending",
+        color: "#f59e0b",
+        valuesByKey: pendingByKey,
+      },
+      {
         label: "Confirmed",
         color: "#2563eb",
         valuesByKey: confirmedByKey,
@@ -286,6 +298,7 @@ const getMonthlyBookingChart = async (ownerId, months = MONTH_WINDOW) => {
     ],
     rowFactory: (bucket) => ({
       label: bucket.label,
+      pending: safeNumber(pendingByKey[bucket.key]),
       confirmed: safeNumber(confirmedByKey[bucket.key]),
       cancelled: safeNumber(cancelledByKey[bucket.key]),
     }),
@@ -636,7 +649,9 @@ const getPlatformDashboard = async () => {
     stats: {
       totalUsers: safeNumber(totalUsers),
       totalMessages: safeNumber(totalMessages),
-      totalBookings: safeNumber(bookingSummary.confirmed?.count + bookingSummary.cancelled?.count),
+      totalBookings: safeNumber(bookingSummary.pending?.count + bookingSummary.confirmed?.count + bookingSummary.cancelled?.count),
+      confirmedBookings: safeNumber(bookingSummary.confirmed?.count),
+      pendingBookingStatusCount: safeNumber(bookingSummary.pending?.count),
       activeBookings: safeNumber(bookingSummary.confirmed?.count),
       cancelledBookings: safeNumber(bookingSummary.cancelled?.count),
       pendingPgs,
@@ -689,7 +704,9 @@ const getOwnerDashboardAnalytics = async (ownerId) => {
   return {
     stats: {
       totalPgs: safeNumber(pgs.length),
-      totalBookings: safeNumber(bookingSummary.confirmed?.count + bookingSummary.cancelled?.count),
+      totalBookings: safeNumber(bookingSummary.pending?.count + bookingSummary.confirmed?.count + bookingSummary.cancelled?.count),
+      confirmedBookings: safeNumber(bookingSummary.confirmed?.count),
+      pendingBookingStatusCount: safeNumber(bookingSummary.pending?.count),
       activeBookings: safeNumber(bookingSummary.confirmed?.count),
       cancelledBookings: safeNumber(bookingSummary.cancelled?.count),
       totalAvailableRooms: pgs.reduce((sum, pg) => sum + safeNumber(pg.availableRooms), 0),

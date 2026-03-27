@@ -252,7 +252,7 @@ export function PaymentCheckout() {
                   </div>
                   <div className="flex items-center justify-between gap-4 text-sm">
                     <span className="text-ink-500">Booking Status</span>
-                    <strong className={booking.bookingStatus === "cancelled" ? "text-rose-700" : "text-emerald-700"}>
+                    <strong className={booking.bookingStatus === "cancelled" ? "text-rose-700" : booking.bookingStatus === "pending" ? "text-amber-700" : "text-emerald-700"}>
                       {booking.bookingStatus}
                     </strong>
                   </div>

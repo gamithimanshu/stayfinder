@@ -8,9 +8,8 @@ import {
   DonutChartCard,
   MultiBarChartCard,
   TrendChartCard,
-  formatDashboardCount,
-  formatDashboardCurrency,
 } from "../components/dashboard/DashboardCharts.jsx";
+import { formatDashboardCount, formatDashboardCurrency } from "../components/dashboard/dashboardFormatters.js";
 import { InfoBanner, SurfaceCard } from "../components/ui.jsx";
 import { useDashboardData } from "../hooks/useDashboardData.js";
 
@@ -21,6 +20,8 @@ const emptyDashboard = {
     totalUsers: 0,
     totalMessages: 0,
     totalBookings: 0,
+    confirmedBookings: 0,
+    pendingBookingStatusCount: 0,
     activeBookings: 0,
     cancelledBookings: 0,
     pendingPgs: 0,
@@ -40,6 +41,7 @@ const emptyDashboard = {
   },
   topHostels: [],
   recentTransactions: [],
+  recentBookings: [],
   recentPendingPgs: [],
   recentMessages: [],
 };
@@ -66,7 +68,9 @@ const formatDateTime = (value) => formatDate(value, { hour: "numeric", minute: "
 
 const statusPillClass = (status, tone = "payment") => {
   if (tone === "booking") {
-    return status === "cancelled" ? "bg-rose-100 text-rose-700" : "bg-sky-100 text-sky-700";
+    if (status === "cancelled") return "bg-rose-100 text-rose-700";
+    if (status === "pending") return "bg-amber-100 text-amber-700";
+    return "bg-sky-100 text-sky-700";
   }
 
   if (status === "paid") return "bg-emerald-100 text-emerald-700";
@@ -80,6 +84,8 @@ function normalizeDashboard(result) {
       totalUsers: safeNumber(result?.stats?.totalUsers),
       totalMessages: safeNumber(result?.stats?.totalMessages),
       totalBookings: safeNumber(result?.stats?.totalBookings),
+      confirmedBookings: safeNumber(result?.stats?.confirmedBookings),
+      pendingBookingStatusCount: safeNumber(result?.stats?.pendingBookingStatusCount),
       activeBookings: safeNumber(result?.stats?.activeBookings),
       cancelledBookings: safeNumber(result?.stats?.cancelledBookings),
       pendingPgs: safeNumber(result?.stats?.pendingPgs),
@@ -99,6 +105,7 @@ function normalizeDashboard(result) {
     },
     topHostels: toArray(result?.topHostels),
     recentTransactions: toArray(result?.recentTransactions),
+    recentBookings: toArray(result?.recentBookings),
     recentPendingPgs: toArray(result?.recentPendingPgs),
     recentMessages: toArray(result?.recentMessages),
   };
@@ -166,6 +173,7 @@ export function AdminDashboard() {
             <p>{refreshing ? "Refreshing live data..." : "Auto-refresh every 30 seconds"}</p>
             <p className="mt-1">Last sync: {formatDateTime(lastUpdatedAt)}</p>
           </div>
+          <Link to="/admin/bookings" className="btn-secondary">Bookings</Link>
           <Link to="/admin/approve" className="btn-primary">Approve PG</Link>
           <Link to="/admin/users" className="btn-secondary">Users</Link>
         </>
@@ -179,7 +187,9 @@ export function AdminDashboard() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {[
           { label: "Total Revenue", value: stats.totalRevenue, accent: "bg-emerald-100 text-emerald-700", icon: Coins, currency: true },
-          { label: "Active Bookings", value: stats.activeBookings, accent: "bg-sky-100 text-sky-700", icon: Building2 },
+          { label: "Confirmed Bookings", value: stats.confirmedBookings, accent: "bg-sky-100 text-sky-700", icon: Building2 },
+          { label: "Pending Bookings", value: stats.pendingBookingStatusCount, accent: "bg-amber-100 text-amber-700", icon: Shield },
+          { label: "Cancelled Bookings", value: stats.cancelledBookings, accent: "bg-rose-100 text-rose-700", icon: CheckCircle2 },
           { label: "Pending PGs", value: stats.pendingPgs, accent: "bg-amber-100 text-amber-700", icon: Shield },
           { label: "Approved PGs", value: stats.approvedPgs, accent: "bg-emerald-100 text-emerald-700", icon: CheckCircle2 },
           { label: "Platform Users", value: stats.totalUsers, accent: "bg-cyan-100 text-cyan-700", icon: Users2 },
@@ -207,7 +217,7 @@ export function AdminDashboard() {
         />
         <MultiBarChartCard
           title="Booking Trends"
-          subtitle="Confirmed vs cancelled bookings by month"
+          subtitle="Pending, confirmed, and cancelled bookings by month"
           chart={data.charts.bookingTrends}
           valueFormatter={formatDashboardCount}
           emptyMessage="Booking activity has not started yet."
@@ -372,7 +382,7 @@ export function AdminDashboard() {
                     </td>
                     <td className="px-6 py-5 sm:px-8">
                       <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusPillClass(transaction.booking?.bookingStatus, "booking")}`}>
-                        {transaction.booking?.bookingStatus || "confirmed"}
+                        {transaction.booking?.bookingStatus || "pending"}
                       </span>
                     </td>
                     <td className="px-6 py-5 text-slate-600 sm:px-8">{formatDateTime(transaction.createdAt)}</td>

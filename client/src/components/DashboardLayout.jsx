@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import { Building2, CheckCircle2, LayoutDashboard, PlusCircle, Users2 } from "lucide-react";
+import { BookOpenCheck, Building2, CheckCircle2, LayoutDashboard, PlusCircle, Users2 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { PageShell } from "./ui.jsx";
 import { cn } from "../utils/cn";
@@ -17,6 +17,7 @@ const navigation = {
     label: "Admin workspace",
     items: [
       { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/admin/bookings", label: "Bookings", icon: BookOpenCheck },
       { to: "/admin/approve", label: "Approve PG", icon: CheckCircle2 },
       { to: "/admin/users", label: "Users", icon: Users2 },
     ],

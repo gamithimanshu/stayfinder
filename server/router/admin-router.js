@@ -4,9 +4,11 @@ const adminMiddleware = require("../middlewares/admin-middleware");
 const {
   approvePg,
   deleteUser,
+  getAdminBookings,
   getAdminDashboard,
   getPendingPgs,
   getUsers,
+  updateBookingStatus,
 } = require("../controllers/admin-controller");
 
 const router = express.Router();
@@ -14,6 +16,8 @@ const router = express.Router();
 router.use(authMiddleware, adminMiddleware);
 
 router.route("/dashboard").get(getAdminDashboard);
+router.route("/bookings").get(getAdminBookings);
+router.route("/bookings/:id/status").patch(updateBookingStatus);
 router.route("/pgs/pending").get(getPendingPgs);
 router.route("/approve/:id").put(approvePg);
 router.route("/users").get(getUsers);

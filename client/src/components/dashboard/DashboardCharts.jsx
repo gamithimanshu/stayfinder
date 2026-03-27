@@ -14,6 +14,7 @@ import {
   YAxis,
 } from "recharts";
 import { SurfaceCard } from "../ui.jsx";
+import { formatDashboardCount, formatDashboardCurrency } from "./dashboardFormatters.js";
 
 const DEFAULT_ANIM_DURATION = 500;
 
@@ -21,9 +22,6 @@ const safeNumber = (value) => {
   const number = Number(value ?? 0);
   return Number.isFinite(number) ? number : 0;
 };
-
-const toCurrency = (value) => `Rs. ${Math.round(safeNumber(value)).toLocaleString("en-IN")}`;
-const toCount = (value) => Math.round(safeNumber(value)).toLocaleString("en-IN");
 
 const toSeriesRows = (chart) => {
   const labels = Array.isArray(chart?.labels) ? chart.labels : [];
@@ -68,7 +66,7 @@ function ChartCardShell({ title, subtitle, children, footer }) {
   );
 }
 
-export function DonutChartCard({ title, subtitle, chart, valueFormatter = toCount, emptyMessage }) {
+export function DonutChartCard({ title, subtitle, chart, valueFormatter = formatDashboardCount, emptyMessage }) {
   const safeData = Array.isArray(chart?.points) ? chart.points : [];
 
   return (
@@ -118,7 +116,7 @@ export function DonutChartCard({ title, subtitle, chart, valueFormatter = toCoun
   );
 }
 
-export function MultiBarChartCard({ title, subtitle, chart, valueFormatter = toCount, emptyMessage }) {
+export function MultiBarChartCard({ title, subtitle, chart, valueFormatter = formatDashboardCount, emptyMessage }) {
   const rows = toSeriesRows(chart);
   const datasets = Array.isArray(chart?.datasets) ? chart.datasets : [];
 
@@ -155,7 +153,7 @@ export function MultiBarChartCard({ title, subtitle, chart, valueFormatter = toC
   );
 }
 
-export function TrendChartCard({ title, subtitle, chart, valueFormatter = toCurrency, emptyMessage }) {
+export function TrendChartCard({ title, subtitle, chart, valueFormatter = formatDashboardCurrency, emptyMessage }) {
   const rows = toSeriesRows(chart);
   const primaryDataset = Array.isArray(chart?.datasets) ? chart.datasets[0] : null;
 
@@ -194,13 +192,5 @@ export function TrendChartCard({ title, subtitle, chart, valueFormatter = toCurr
       )}
     </ChartCardShell>
   );
-}
-
-export function formatDashboardCurrency(value) {
-  return toCurrency(value);
-}
-
-export function formatDashboardCount(value) {
-  return toCount(value);
 }
 

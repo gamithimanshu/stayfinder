@@ -65,7 +65,7 @@ const createBooking = async (req, res, next) => {
       durationMonths: normalizedDuration,
       totalAmount,
       paymentStatus: "pending",
-      bookingStatus: "confirmed",
+      bookingStatus: "pending",
     });
 
     createdPayment = await Payment.create({
@@ -171,7 +171,7 @@ const processBookingPayment = async (req, res, next) => {
       updatedPg = await adjustPgAvailability(booking.pgId, 1);
     } else if (isPayLaterReservation) {
       nextStatus = "pending";
-      nextBookingStatus = "confirmed";
+      nextBookingStatus = "pending";
       generatedTransactionId = `PAY-LATER-${booking._id.toString().slice(-6).toUpperCase()}`;
     } else {
       generatedTransactionId = `SIM-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
@@ -188,7 +188,7 @@ const processBookingPayment = async (req, res, next) => {
 
     return res.status(200).json({
       message: isPayLaterReservation
-        ? "Booking confirmed with pay later. Collect payment at the property."
+        ? "Booking saved as pending with pay later. Collect payment at the property to confirm it."
         : nextStatus === "paid"
           ? "Payment completed successfully"
           : "Payment failed and the reserved room has been released",
