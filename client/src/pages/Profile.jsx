@@ -175,7 +175,7 @@ export function Profile() {
         />
         {message ? <InfoBanner tone={messageTone}>{message}</InfoBanner> : null}
 
-        <div className="grid gap-10 xl:grid-cols-[0.78fr_1.22fr]">
+        <div className="grid gap-8 xl:grid-cols-[0.78fr_1.22fr]">
           <SurfaceCard className="space-y-5 p-8">
             {[
               ["Name", formData.name || "Not set"],
@@ -189,7 +189,7 @@ export function Profile() {
             ))}
           </SurfaceCard>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="min-w-0">
             <SurfaceCard className="space-y-6 p-8">
               <div>
                 <p className="text-sm font-semibold text-ink-500">Edit profile</p>
@@ -245,23 +245,23 @@ export function Profile() {
         </div>
 
         <SurfaceCard className="space-y-6 p-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
               <p className="text-sm font-semibold text-ink-500">Booking history</p>
               <h2 className="mt-1 panel-title">Your recent bookings</h2>
               <p className="mt-2 text-sm text-ink-500">Track booking status, payment progress, and jump back into pending payments from your profile.</p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[360px]">
               {[
                 { label: "Pending", value: toArray(bookings).filter((booking) => booking?.bookingStatus === "pending").length, accent: "bg-amber-100 text-amber-700" },
                 { label: "Confirmed", value: toArray(bookings).filter((booking) => booking?.bookingStatus === "confirmed").length, accent: "bg-sky-100 text-sky-700" },
                 { label: "Cancelled", value: toArray(bookings).filter((booking) => booking?.bookingStatus === "cancelled").length, accent: "bg-rose-100 text-rose-700" },
               ].map((item) => (
-                <div key={item.label} className="rounded-2xl border border-brand-100 bg-brand-50/40 px-4 py-3">
+                <div key={item.label} className="rounded-xl border border-brand-100 bg-brand-50/40 px-4 py-3">
                   <p className="text-xs uppercase tracking-[0.16em] text-ink-400">{item.label}</p>
-                  <div className="mt-2 flex items-center justify-between gap-3">
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                     <p className="text-xl font-semibold text-ink-900">{item.value}</p>
-                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${item.accent}`}>{item.label}</span>
+                    <span className={`rounded-xl px-2.5 py-1 text-[11px] font-semibold ${item.accent}`}>{item.label}</span>
                   </div>
                 </div>
               ))}
@@ -269,14 +269,14 @@ export function Profile() {
           </div>
 
           {toArray(bookings).length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-brand-200 bg-brand-50/30 px-6 py-10 text-center">
+            <div className="rounded-xl border border-dashed border-brand-200 bg-brand-50/30 px-6 py-10 text-center">
               <p className="text-base font-semibold text-ink-900">No bookings yet</p>
               <p className="mt-2 text-sm text-ink-500">Once you book a PG, the history will appear here with payment and booking status.</p>
             </div>
           ) : (
             <div className="space-y-4">
               {toArray(bookings).map((booking) => (
-                <div key={booking._id} className="rounded-3xl border border-brand-100 bg-white p-5 shadow-sm">
+                <div key={booking._id} className="rounded-xl border border-brand-100 bg-white p-5 shadow-sm">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="space-y-4">
                       <div>
@@ -287,31 +287,31 @@ export function Profile() {
                       </div>
 
                       <div className="flex flex-wrap gap-2">
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${bookingTone(booking.bookingStatus)}`}>
+                        <span className={`inline-flex rounded-xl px-3 py-1 text-xs font-medium ${bookingTone(booking.bookingStatus)}`}>
                           Booking: {booking.bookingStatus || "pending"}
                         </span>
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${paymentTone(booking.paymentStatus)}`}>
+                        <span className={`inline-flex rounded-xl px-3 py-1 text-xs font-medium ${paymentTone(booking.paymentStatus)}`}>
                           Payment: {booking.paymentStatus || "pending"}
                         </span>
                       </div>
 
                       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        <div className="rounded-2xl bg-ink-50 p-4">
+                        <div className="rounded-xl bg-ink-50 p-4">
                           <div className="mb-2 text-ink-500"><CalendarClock size={18} /></div>
                           <p className="text-xs uppercase tracking-[0.16em] text-ink-400">Check-in</p>
                           <p className="mt-2 text-sm font-semibold text-ink-900">{formatDate(booking.checkInDate)}</p>
                         </div>
-                        <div className="rounded-2xl bg-ink-50 p-4">
+                        <div className="rounded-xl bg-ink-50 p-4">
                           <div className="mb-2 text-ink-500"><House size={18} /></div>
                           <p className="text-xs uppercase tracking-[0.16em] text-ink-400">Duration</p>
                           <p className="mt-2 text-sm font-semibold text-ink-900">{booking.durationMonths || 0} month{Number(booking.durationMonths) === 1 ? "" : "s"}</p>
                         </div>
-                        <div className="rounded-2xl bg-ink-50 p-4">
+                        <div className="rounded-xl bg-ink-50 p-4">
                           <div className="mb-2 text-ink-500"><CreditCard size={18} /></div>
                           <p className="text-xs uppercase tracking-[0.16em] text-ink-400">Amount</p>
                           <p className="mt-2 text-sm font-semibold text-ink-900">{formatCurrency(booking.totalAmount)}</p>
                         </div>
-                        <div className="rounded-2xl bg-ink-50 p-4">
+                        <div className="rounded-xl bg-ink-50 p-4">
                           <div className="mb-2 text-ink-500"><CalendarClock size={18} /></div>
                           <p className="text-xs uppercase tracking-[0.16em] text-ink-400">Booked on</p>
                           <p className="mt-2 text-sm font-semibold text-ink-900">{formatDate(booking.createdAt)}</p>
@@ -319,8 +319,8 @@ export function Profile() {
                       </div>
                     </div>
 
-                    <div className="flex w-full flex-col gap-3 lg:w-auto lg:min-w-[210px]">
-                      <div className="rounded-2xl bg-brand-50/60 p-4 text-sm text-ink-600">
+                    <div className="flex w-full min-w-0 flex-col gap-3 lg:w-auto lg:min-w-[210px]">
+                      <div className="rounded-xl bg-brand-50/60 p-4 text-sm text-ink-600">
                         <p className="font-semibold text-ink-900">Payment method</p>
                         <p className="mt-1">{booking.paymentMethod ? booking.paymentMethod.replaceAll("_", " ") : "Pending selection"}</p>
                         <p className="mt-3 font-semibold text-ink-900">Transaction ID</p>
@@ -343,3 +343,5 @@ export function Profile() {
     </PageSection>
   );
 }
+
+

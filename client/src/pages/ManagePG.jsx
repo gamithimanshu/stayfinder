@@ -257,7 +257,7 @@ export function ManagePG() {
         title="Manage PGs"
         description="Loading your listings..."
       >
-        <SurfaceCard className="rounded-3xl border border-black/5 bg-white/85 p-10 text-center text-ink-500">
+        <SurfaceCard className="rounded-xl border border-black/5 bg-white/85 p-10 text-center text-ink-500">
           Loading your PG listings...
         </SurfaceCard>
       </DashboardLayout>
@@ -292,7 +292,7 @@ export function ManagePG() {
                   <h2 className="mt-1 text-2xl font-semibold text-ink-900">{pg.title}</h2>
                   <p className="mt-2 text-sm text-ink-500">{pg.location}</p>
                   <div className="mt-3">
-                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                    <span className={`inline-flex rounded-xl px-3 py-1 text-xs font-semibold ${
                       pg.isApproved
                         ? "bg-emerald-100 text-emerald-700"
                         : "bg-amber-100 text-amber-700"
@@ -308,13 +308,13 @@ export function ManagePG() {
               </div>
 
               {!pg.isApproved ? (
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
                   This listing is still pending admin approval and will appear publicly after it is approved.
                 </div>
               ) : null}
 
               {editingId === pg._id ? (
-                <div className="space-y-5 rounded-3xl bg-ink-50 p-6">
+                <div className="space-y-5 rounded-xl bg-ink-50 p-6">
                   <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                     <FormField label="Title"><TextInput name="title" value={editForm.title} onChange={handleEditChange} /></FormField>
                     <FormField label="Price"><TextInput name="price" type="number" value={editForm.price} onChange={handleEditChange} /></FormField>
@@ -340,7 +340,7 @@ export function ManagePG() {
                   </div>
                   <FormField label="Description"><TextArea name="description" rows="3" value={editForm.description} onChange={handleEditChange} /></FormField>
                   <FormField label="Amenities"><TextInput name="amenities" value={editForm.amenities} onChange={handleEditChange} placeholder="Wi-Fi, Laundry, Meals" /></FormField>
-                  <label className="flex cursor-pointer items-center justify-center gap-3 rounded-3xl border border-dashed border-ink-300 bg-white px-6 py-6 text-sm font-medium text-ink-600">
+                  <label className="flex cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-ink-300 bg-white px-6 py-6 text-sm font-medium text-ink-600">
                     <ImagePlus size={18} />
                     Replace images
                     <input type="file" accept="image/*" multiple onChange={handleEditImages} hidden />
@@ -348,7 +348,7 @@ export function ManagePG() {
                   {toArray(editForm.images).length > 0 ? (
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                       {toArray(editForm.images).map((image, index) => (
-                        <img key={`${index}-${String(image).slice(0, 32)}`} src={image} alt={`Preview ${index + 1}`} className="h-40 w-full rounded-2xl object-cover" />
+                        <img key={`${index}-${String(image).slice(0, 32)}`} src={image} alt={`Preview ${index + 1}`} className="h-40 w-full rounded-xl object-cover" />
                       ))}
                     </div>
                   ) : null}
@@ -364,12 +364,12 @@ export function ManagePG() {
                 <div className="mt-4 space-y-4">
                   {pgBookings.length ? (
                     pgBookings.map((booking) => (
-                      <div key={booking._id} className="flex items-start justify-between gap-4 rounded-2xl bg-ink-50 p-4">
+                      <div key={booking._id} className="flex items-start justify-between gap-4 rounded-xl bg-ink-50 p-4">
                         <div>
                           <p className="font-semibold text-ink-900">{getResidentLabel(booking.user)}</p>
                           <p className="mt-1 text-sm text-ink-500">{booking.user?.phone || booking.user?.email || "No contact info"}</p>
                           <div className="mt-3 flex flex-wrap gap-2">
-                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                            <span className={`inline-flex rounded-xl px-3 py-1 text-xs font-medium ${
                               booking.paymentStatus === "paid"
                                 ? "bg-emerald-100 text-emerald-700"
                                 : booking.paymentStatus === "failed"
@@ -378,7 +378,7 @@ export function ManagePG() {
                             }`}>
                               Payment: {booking.paymentStatus}
                             </span>
-                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                            <span className={`inline-flex rounded-xl px-3 py-1 text-xs font-medium ${
                               booking.bookingStatus === "cancelled"
                                 ? "bg-rose-100 text-rose-700"
                                 : booking.bookingStatus === "pending"
@@ -404,3 +404,5 @@ export function ManagePG() {
     </DashboardLayout>
   );
 }
+
+

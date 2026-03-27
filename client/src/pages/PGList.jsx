@@ -83,8 +83,8 @@ export function PGList() {
     <div>
       <PageSection className="pt-8 sm:pt-12">
         <PageShell className="space-y-8">
-          <section className="gradient-hero rounded-[2rem] px-6 py-12 text-white sm:px-10">
-            <span className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-white/75">
+          <section className="gradient-hero rounded-xl px-6 py-12 text-white sm:px-10">
+            <span className="inline-flex rounded-xl border border-white/15 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-white/75">
               PG discovery
             </span>
             <h1 className="mt-5 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
@@ -208,3 +208,5 @@ export function PGList() {
 }
 
 export const Listings = PGList;
+
+

@@ -201,7 +201,7 @@ export function PGDetail() {
                   <button
                     key={image}
                     type="button"
-                    className={`overflow-hidden rounded-2xl border ${selectedImage === image ? "border-brand-400 ring-4 ring-brand-100" : "border-white/70"} bg-white`}
+                    className={`overflow-hidden rounded-xl border ${selectedImage === image ? "border-brand-400 ring-4 ring-brand-100" : "border-white/70"} bg-white`}
                     onClick={() => setSelectedImage(image)}
                     aria-label={`View image for ${pg.title}`}
                   >
@@ -218,7 +218,7 @@ export function PGDetail() {
                   {pg.title}
                 </h1>
                 <div className="mt-5 flex flex-wrap items-center gap-3">
-                  <span className="rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white">
+                  <span className="rounded-xl bg-ink-900 px-4 py-2 text-sm font-semibold text-white">
                     Rs. {pg.price.toLocaleString()}
                     <span className="ml-1 text-white/70">/month</span>
                   </span>
@@ -235,15 +235,15 @@ export function PGDetail() {
                 <p className="mt-6 text-sm leading-7 text-ink-500">{pg.description}</p>
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl bg-brand-50 p-4 text-sm text-brand-800">
+                  <div className="rounded-xl bg-brand-50 p-4 text-sm text-brand-800">
                     <ShieldCheck size={18} className="mb-3" />
                     Verified stay
                   </div>
-                  <div className="rounded-2xl bg-ink-50 p-4 text-sm text-ink-700">
+                  <div className="rounded-xl bg-ink-50 p-4 text-sm text-ink-700">
                     <Sparkles size={18} className="mb-3" />
                     Clean amenities
                   </div>
-                  <div className="rounded-2xl bg-ink-50 p-4 text-sm text-ink-700">
+                  <div className="rounded-xl bg-ink-50 p-4 text-sm text-ink-700">
                     <Users size={18} className="mb-3" />
                     {roomsLeft} rooms left
                   </div>
@@ -283,11 +283,11 @@ export function PGDetail() {
             <h2 className="text-2xl font-semibold text-ink-900">Everything included for daily comfort</h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {amenities.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-brand-200 bg-brand-50/60 px-4 py-6 text-sm text-ink-500">
+                <div className="rounded-xl border border-dashed border-brand-200 bg-brand-50/60 px-4 py-6 text-sm text-ink-500">
                   No amenities listed yet.
                 </div>
               ) : amenities.map((amenity) => (
-                <div key={amenity} className="rounded-2xl border border-ink-100 bg-ink-50 px-4 py-4 text-sm font-medium text-ink-700">
+                <div key={amenity} className="rounded-xl border border-ink-100 bg-ink-50 px-4 py-4 text-sm font-medium text-ink-700">
                   <div className="mb-3 text-brand-700">
                     <ShieldCheck size={18} />
                   </div>
@@ -334,7 +334,7 @@ export function PGDetail() {
                   <p className="text-sm text-ink-500">No reviews yet. Be the first to share your experience.</p>
                 ) : (
                   reviews.map((review) => (
-                    <article key={review.id ?? review._id ?? review.name} className="rounded-2xl border border-ink-100 bg-ink-50 p-5">
+                    <article key={review.id ?? review._id ?? review.name} className="rounded-xl border border-ink-100 bg-ink-50 p-5">
                       <div className="flex items-start justify-between gap-4">
                         <h3 className="text-base font-semibold text-ink-900">{review.name ?? user?.name ?? "Resident"}</h3>
                         {Number.isFinite(Number(review.rating)) && Number(review.rating) > 0 ? (
@@ -343,7 +343,7 @@ export function PGDetail() {
                             {Number(review.rating).toFixed(1)}
                           </div>
                         ) : (
-                          <div className="rounded-full bg-ink-100 px-3 py-1.5 text-sm font-medium text-ink-500">
+                          <div className="rounded-xl bg-ink-100 px-3 py-1.5 text-sm font-medium text-ink-500">
                             Not rated
                           </div>
                         )}
@@ -362,3 +362,5 @@ export function PGDetail() {
     </>
   );
 }
+
+

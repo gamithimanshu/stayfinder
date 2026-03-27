@@ -45,7 +45,7 @@ export const About = () => {
             </p>
           </div>
 
-          <div className="gradient-hero rounded-[1.75rem] px-6 py-7 text-white">
+          <div className="gradient-hero rounded-xl px-6 py-7 text-white">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/70">Mission</p>
             <h2 className="mt-3 text-2xl text-white" style={{ fontFamily: "var(--font-display)" }}>Reduce the stress of accommodation search.</h2>
             <p className="mt-4 text-sm leading-7 text-white/75">
@@ -75,7 +75,7 @@ export const About = () => {
           <div className="grid gap-8 border-t border-brand-100 pt-8 md:grid-cols-3">
             {features.map((item) => (
               <div key={item.title} className="surface-card p-6">
-                <div className="gradient-primary flex h-12 w-12 items-center justify-center rounded-2xl text-white">
+                <div className="gradient-primary flex h-12 w-12 items-center justify-center rounded-xl text-white">
                   <item.icon size={20} />
                 </div>
                 <h3 className="mt-5 text-xl text-ink-900" style={{ fontFamily: "var(--font-display)" }}>{item.title}</h3>
@@ -88,3 +88,5 @@ export const About = () => {
     </>
   );
 };
+
+

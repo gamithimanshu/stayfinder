@@ -36,7 +36,7 @@ export function MapView({ listings = [], onMarkerClick = () => {}, className = "
 
   if (validListings.length === 0) {
     return (
-      <div className={`rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500 ${className}`}>
+      <div className={`rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500 ${className}`}>
         <MapPin className="mx-auto mb-3 h-10 w-10 text-slate-400" />
         <p className="font-medium">No map location available for these PGs.</p>
       </div>
@@ -48,7 +48,7 @@ export function MapView({ listings = [], onMarkerClick = () => {}, className = "
   const openUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedQuery)}`;
 
   return (
-    <div className={`overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${className}`}>
+    <div className={`overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ${className}`}>
       <div className="grid gap-0 lg:grid-cols-[1.4fr_0.9fr]">
         <div className="min-h-[420px] bg-slate-100">
           <iframe
@@ -119,3 +119,5 @@ export function MapView({ listings = [], onMarkerClick = () => {}, className = "
     </div>
   );
 }
+
+

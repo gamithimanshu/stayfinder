@@ -152,7 +152,7 @@ export function AdminDashboard() {
           </>
         }
       >
-        <SurfaceCard className="rounded-3xl border border-black/5 bg-white/85 p-10 text-center text-slate-500">
+        <SurfaceCard className="rounded-xl border border-black/5 bg-white/85 p-10 text-center text-slate-500">
           Loading the admin dashboard...
         </SurfaceCard>
       </DashboardLayout>
@@ -239,13 +239,13 @@ export function AdminDashboard() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <SurfaceCard className="rounded-3xl border border-black/5 bg-white/90 p-6 shadow-sm">
+        <SurfaceCard className="rounded-xl border border-black/5 bg-white/90 p-6 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-semibold text-slate-700">Top Hostels</p>
               <p className="mt-1 text-xs text-slate-500">Best-performing properties by paid revenue and booking volume</p>
             </div>
-            <div className="rounded-2xl bg-sky-100 p-3 text-sky-700">
+            <div className="rounded-xl bg-sky-100 p-3 text-sky-700">
               <Building2 size={20} />
             </div>
           </div>
@@ -253,13 +253,13 @@ export function AdminDashboard() {
           <div className="mt-5 space-y-3">
             {data.topHostels.length ? (
               data.topHostels.map((hostel) => (
-                <div key={hostel._id} className="rounded-2xl border border-slate-200 px-4 py-4">
+                <div key={hostel._id} className="rounded-xl border border-slate-200 px-4 py-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-semibold text-slate-900">{hostel.rank}. {hostel.title}</p>
                       <p className="mt-1 text-sm text-slate-500">{hostel.location}</p>
                     </div>
-                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                    <span className="rounded-xl bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                       {formatDashboardCurrency(hostel.paidRevenue)}
                     </span>
                   </div>
@@ -271,7 +271,7 @@ export function AdminDashboard() {
                 </div>
               ))
             ) : (
-              <div className="rounded-2xl border border-dashed border-slate-300 px-4 py-8 text-sm text-slate-500">
+              <div className="rounded-xl border border-dashed border-slate-300 px-4 py-8 text-sm text-slate-500">
                 No hostel performance data is available yet.
               </div>
             )}
@@ -279,7 +279,7 @@ export function AdminDashboard() {
         </SurfaceCard>
 
         <div className="space-y-6">
-          <SurfaceCard className="rounded-3xl border border-black/5 bg-white/90 p-6 shadow-sm">
+          <SurfaceCard className="rounded-xl border border-black/5 bg-white/90 p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-slate-700">Approval Queue</p>
@@ -294,7 +294,7 @@ export function AdminDashboard() {
             <div className="mt-5 space-y-3">
               {data.recentPendingPgs.length ? (
                 data.recentPendingPgs.map((pg) => (
-                  <div key={pg._id} className="rounded-2xl border border-slate-200 px-4 py-3">
+                  <div key={pg._id} className="rounded-xl border border-slate-200 px-4 py-3">
                     <p className="font-medium text-slate-900">{pg.title || "Untitled listing"}</p>
                     <p className="mt-1 text-sm text-slate-500">
                       {pg.location || pg.address || "Location not added"}
@@ -304,14 +304,14 @@ export function AdminDashboard() {
                   </div>
                 ))
               ) : (
-                <div className="rounded-2xl border border-dashed border-slate-300 px-4 py-8 text-sm text-slate-500">
+                <div className="rounded-xl border border-dashed border-slate-300 px-4 py-8 text-sm text-slate-500">
                   There are no pending PG approvals right now.
                 </div>
               )}
             </div>
           </SurfaceCard>
 
-          <SurfaceCard className="rounded-3xl border border-black/5 bg-white/90 p-6 shadow-sm">
+          <SurfaceCard className="rounded-xl border border-black/5 bg-white/90 p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-slate-700">Recent Messages</p>
@@ -322,7 +322,7 @@ export function AdminDashboard() {
             <div className="mt-5 space-y-3">
               {data.recentMessages.length ? (
                 data.recentMessages.map((item) => (
-                  <div key={item._id} className="rounded-2xl border border-slate-200 px-4 py-3">
+                  <div key={item._id} className="rounded-xl border border-slate-200 px-4 py-3">
                     <p className="font-medium text-slate-900">{item.name || "Unknown sender"}</p>
                     <p className="mt-1 text-sm text-slate-500">{item.email || "No email provided"}</p>
                     <p className="mt-2 line-clamp-2 text-sm text-slate-600">{item.message || "No message content was included."}</p>
@@ -330,7 +330,7 @@ export function AdminDashboard() {
                   </div>
                 ))
               ) : (
-                <div className="rounded-2xl border border-dashed border-slate-300 px-4 py-8 text-sm text-slate-500">
+                <div className="rounded-xl border border-dashed border-slate-300 px-4 py-8 text-sm text-slate-500">
                   No support messages yet.
                 </div>
               )}
@@ -339,7 +339,7 @@ export function AdminDashboard() {
         </div>
       </div>
 
-      <SurfaceCard className="rounded-3xl border border-slate-100 bg-white/90 p-0 shadow-sm">
+      <SurfaceCard className="rounded-xl border border-slate-100 bg-white/90 p-0 shadow-sm">
         <div className="flex flex-col gap-3 border-b bg-slate-50 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <div>
             <p className="text-sm font-medium text-slate-700">Recent Transactions</p>
@@ -376,12 +376,12 @@ export function AdminDashboard() {
                     <td className="px-6 py-5 text-slate-600 sm:px-8">{transaction.pg?.title || "PG not available"}</td>
                     <td className="px-6 py-5 text-slate-600 sm:px-8">{formatDashboardCurrency(transaction.amount)}</td>
                     <td className="px-6 py-5 sm:px-8">
-                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusPillClass(transaction.paymentStatus)}`}>
+                      <span className={`inline-flex rounded-xl px-3 py-1 text-xs font-medium ${statusPillClass(transaction.paymentStatus)}`}>
                         {transaction.paymentStatus || "pending"}
                       </span>
                     </td>
                     <td className="px-6 py-5 sm:px-8">
-                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusPillClass(transaction.booking?.bookingStatus, "booking")}`}>
+                      <span className={`inline-flex rounded-xl px-3 py-1 text-xs font-medium ${statusPillClass(transaction.booking?.bookingStatus, "booking")}`}>
                         {transaction.booking?.bookingStatus || "pending"}
                       </span>
                     </td>
@@ -396,3 +396,5 @@ export function AdminDashboard() {
     </DashboardLayout>
   );
 }
+
+

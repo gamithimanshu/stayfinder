@@ -137,8 +137,8 @@ export function Wishlist() {
                   </div>
                 </SurfaceCard>
                 <div className="flex gap-3">
-                  <div className="h-11 flex-1 rounded-full bg-ink-100 animate-pulse" />
-                  <div className="h-11 flex-1 rounded-full bg-ink-100 animate-pulse" />
+                  <div className="h-11 flex-1 rounded-xl bg-ink-100 animate-pulse" />
+                  <div className="h-11 flex-1 rounded-xl bg-ink-100 animate-pulse" />
                 </div>
               </div>
             ))}
@@ -186,3 +186,5 @@ export function Wishlist() {
     </PageSection>
   );
 }
+
+

@@ -132,11 +132,11 @@
   }
 
   .surface-card {
-    @apply rounded-[1.5rem] border border-black/5 bg-white/90 shadow-[0_18px_50px_-28px_rgba(30,25,18,0.35)] backdrop-blur-sm;
+    @apply rounded-xl border border-black/5 bg-white/90 shadow-[0_18px_50px_-28px_rgba(30,25,18,0.35)] backdrop-blur-sm;
   }
 
   .section-kicker {
-    @apply inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-brand-700;
+    @apply inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-brand-700;
   }
 
   .section-title {
@@ -151,19 +151,19 @@
   }
 
   .btn-primary {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_-16px_rgba(15,116,88,0.95)] transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 py-3 text-center text-sm font-semibold text-white shadow-[0_14px_30px_-16px_rgba(15,116,88,0.95)] transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .btn-secondary {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-ink-200 bg-white/85 px-5 py-3 text-sm font-semibold text-ink-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-xl border border-ink-200 bg-white/85 px-5 py-3 text-center text-sm font-semibold text-ink-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .badge-soft {
-    @apply inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-800;
+    @apply inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-800;
   }
 
   .input-base {
-    @apply block min-h-12 w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-100;
+    @apply block min-h-12 min-w-0 w-full max-w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-100;
   }
 
   .panel-title {
@@ -195,3 +195,5 @@
     color: transparent;
   }
 }
+
+

@@ -171,7 +171,7 @@ export function AddPG() {
             <FormField label="Description"><TextArea name="description" value={formData.description} onChange={handleChange} rows="4" /></FormField>
             <FormField label="Amenities" hint="Comma separated"><TextInput name="amenities" value={formData.amenities} onChange={handleChange} placeholder="Wi-Fi, Laundry, Meals" /></FormField>
 
-            <label className="flex cursor-pointer items-center justify-center gap-3 rounded-3xl border border-dashed border-ink-300 bg-ink-50 px-6 py-8 text-sm font-medium text-ink-600">
+            <label className="flex cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-ink-300 bg-ink-50 px-6 py-8 text-sm font-medium text-ink-600">
               <ImagePlus size={20} />
               Upload images
               <input type="file" accept="image/*" multiple onChange={handleImages} hidden />
@@ -180,7 +180,7 @@ export function AddPG() {
             {toArray(formData.images).length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {toArray(formData.images).map((image, index) => (
-                  <img key={`${index}-${String(image).slice(0, 32)}`} src={image} alt={`Preview ${index + 1}`} className="h-40 w-full rounded-2xl object-cover" />
+                  <img key={`${index}-${String(image).slice(0, 32)}`} src={image} alt={`Preview ${index + 1}`} className="h-40 w-full rounded-xl object-cover" />
                 ))}
               </div>
             ) : null}
@@ -200,3 +200,5 @@ export function AddPG() {
     </DashboardLayout>
   );
 }
+
+

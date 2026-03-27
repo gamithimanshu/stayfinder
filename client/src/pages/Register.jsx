@@ -74,7 +74,7 @@ export const Register = () => {
     <PageSection className="pt-10 sm:pt-14">
       <PageShell className="flex justify-center">
         <SurfaceCard className="w-full max-w-lg border-sky-200 bg-gradient-to-b from-sky-50 to-white p-6 shadow-[0_24px_60px_-30px_rgba(38,139,201,0.42)] sm:p-8">
-          <span className="inline-flex rounded-full border border-sky-200 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-sky-700">
+          <span className="inline-flex rounded-xl border border-sky-200 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-sky-700">
             New Account
           </span>
           <h2 className="text-[2rem] tracking-tight text-ink-900" style={{ fontFamily: "var(--font-display)" }}>
@@ -156,3 +156,5 @@ export const Register = () => {
     </PageSection>
   );
 };
+
+

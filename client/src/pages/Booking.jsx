@@ -152,21 +152,21 @@ export function Booking() {
               <p className="text-sm leading-7 text-ink-500">
                 Confirm the booking details here, then continue to a separate payment page to complete the checkout flow.
               </p>
-              <div className="rounded-3xl border border-black/5 bg-sky-50/60 p-5">
+              <div className="rounded-xl border border-black/5 bg-sky-50/60 p-5">
                 <h2 className="text-xl font-semibold text-ink-900">{pg.title}</h2>
                 <p className="mt-2 text-sm text-ink-500">{pg.location}</p>
                 <p className="mt-4 text-2xl font-bold text-ink-900">Rs. {pg.price.toLocaleString()}<span className="text-sm font-medium text-ink-400"> /month</span></p>
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-2xl border border-black/5 bg-white p-4">
+                <div className="rounded-xl border border-black/5 bg-white p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-400">Room Type</p>
                   <p className="mt-2 text-sm font-semibold text-ink-900">{pg.roomType || "Standard Room"}</p>
                 </div>
-                <div className="rounded-2xl border border-black/5 bg-white p-4">
+                <div className="rounded-xl border border-black/5 bg-white p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-400">Available Rooms</p>
                   <p className="mt-2 text-sm font-semibold text-ink-900">{pg.availableRooms}</p>
                 </div>
-                <div className="rounded-2xl border border-black/5 bg-white p-4">
+                <div className="rounded-xl border border-black/5 bg-white p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-400">Stay Type</p>
                   <p className="mt-2 text-sm font-semibold capitalize text-ink-900">{pg.gender} / monthly</p>
                 </div>
@@ -207,37 +207,37 @@ export function Booking() {
                   </div>
                 </FormField>
 
-                <div className="rounded-3xl border border-black/5 bg-ink-50/70 p-5">
+                <div className="rounded-xl border border-black/5 bg-ink-50/70 p-5">
                   <p className="text-sm font-semibold text-ink-900">Booking summary</p>
-                  <div className="flex items-center justify-between gap-4 border-b border-ink-100 pb-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 pb-4">
                     <span className="mt-4 inline-flex items-center gap-2 text-sm text-ink-500">
                       <CreditCard size={18} />
                       Monthly Rent
                     </span>
                     <strong className="mt-4 text-base text-ink-900">Rs. {monthlyPrice.toLocaleString()}</strong>
                   </div>
-                  <div className="mt-4 flex items-center justify-between gap-4 border-b border-ink-100 pb-4">
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 pb-4">
                     <span className="inline-flex items-center gap-2 text-sm text-ink-500">
                       <Hotel size={18} />
                       Stay Duration
                     </span>
                     <strong className="text-base text-ink-900">{durationMonths} month(s)</strong>
                   </div>
-                  <div className="mt-4 flex items-center justify-between gap-4 border-b border-ink-100 pb-4">
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 pb-4">
                     <span className="inline-flex items-center gap-2 text-sm text-ink-500">
                       <CalendarDays size={18} />
                       Checkout Date
                     </span>
                     <strong className="text-base text-ink-900">{checkoutDate || "TBD"}</strong>
                   </div>
-                  <div className="mt-4 flex items-center justify-between gap-4 border-b border-ink-100 pb-4">
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 pb-4">
                     <span className="inline-flex items-center gap-2 text-sm text-ink-500">
                       <ShieldCheck size={18} />
                       Available Rooms
                     </span>
                     <strong className="text-base text-ink-900">{pg.availableRooms ?? "N/A"}</strong>
                   </div>
-                  <div className="mt-4 flex items-center justify-between gap-4">
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-2 text-sm font-semibold text-ink-700">
                       <CreditCard size={18} />
                       Total Price
@@ -264,3 +264,5 @@ export function Booking() {
     </PageSection>
   );
 }
+
+

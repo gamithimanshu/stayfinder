@@ -10,7 +10,7 @@ export const Footer = () => {
         <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-4">
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-3">
-              <div className="gradient-primary flex h-11 w-11 items-center justify-center rounded-2xl text-white">
+              <div className="gradient-primary flex h-11 w-11 items-center justify-center rounded-xl text-white">
                 <Home size={20} />
               </div>
               <div>
@@ -71,3 +71,5 @@ export const Footer = () => {
     </footer>
   );
 };
+
+

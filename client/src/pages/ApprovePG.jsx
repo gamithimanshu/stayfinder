@@ -85,7 +85,7 @@ export function ApprovePG() {
         title="Approve PG"
         description="Loading your approval queue..."
       >
-        <SurfaceCard className="rounded-3xl border border-black/5 bg-white/85 p-10 text-center text-ink-500">
+        <SurfaceCard className="rounded-xl border border-black/5 bg-white/85 p-10 text-center text-ink-500">
           Loading PG approvals...
         </SurfaceCard>
       </DashboardLayout>
@@ -126,19 +126,19 @@ export function ApprovePG() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl bg-ink-50 p-4">
+              <div className="rounded-xl bg-ink-50 p-4">
                 <p className="text-sm text-ink-500">Owner</p>
                 <p className="mt-1 font-semibold text-ink-900">{pg.ownerId?.username || pg.ownerId?.name || "Not available"}</p>
               </div>
-              <div className="rounded-2xl bg-ink-50 p-4">
+              <div className="rounded-xl bg-ink-50 p-4">
                 <p className="text-sm text-ink-500">Email</p>
                 <p className="mt-1 font-semibold text-ink-900">{pg.ownerId?.email || "Not available"}</p>
               </div>
-              <div className="rounded-2xl bg-ink-50 p-4">
+              <div className="rounded-xl bg-ink-50 p-4">
                 <p className="text-sm text-ink-500">Phone</p>
                 <p className="mt-1 font-semibold text-ink-900">{pg.ownerId?.phone || "Not available"}</p>
               </div>
-              <div className="rounded-2xl bg-ink-50 p-4">
+              <div className="rounded-xl bg-ink-50 p-4">
                 <p className="text-sm text-ink-500">Price</p>
                 <p className="mt-1 font-semibold text-ink-900">Rs. {Number(pg.price).toLocaleString()}/month</p>
               </div>
@@ -149,11 +149,11 @@ export function ApprovePG() {
             {Array.isArray(pg.images) && pg.images.length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {toArray(pg.images).map((image, index) => (
-                  <SafeImage key={`${pg._id}-${index}`} src={image} alt={`${pg.title} ${index + 1}`} className="h-44 w-full rounded-2xl object-cover" />
+                  <SafeImage key={`${pg._id}-${index}`} src={image} alt={`${pg.title} ${index + 1}`} className="h-44 w-full rounded-xl object-cover" />
                 ))}
               </div>
             ) : (
-              <div className="overflow-hidden rounded-2xl border border-dashed border-brand-200 bg-brand-50/60">
+              <div className="overflow-hidden rounded-xl border border-dashed border-brand-200 bg-brand-50/60">
                 <SafeImage src="" alt={`${pg.title} fallback`} className="h-44 w-full object-cover" />
               </div>
             )}
@@ -163,3 +163,5 @@ export function ApprovePG() {
     </DashboardLayout>
   );
 }
+
+

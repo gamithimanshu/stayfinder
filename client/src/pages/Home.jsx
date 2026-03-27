@@ -212,14 +212,18 @@ export const Home = () => {
     <div>
       <PageSection className="pt-6 sm:pt-10">
         <PageShell>
-          <section className="relative overflow-hidden rounded-[2rem] border border-black/5 bg-ink-900 px-6 py-16 text-white shadow-[0_40px_90px_-45px_rgba(29,25,18,0.7)] sm:px-10 lg:px-14 lg:py-20">
-            <div className="absolute inset-0 gradient-hero opacity-95" />
-            <div className="absolute -right-16 top-8 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
-            <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-sky-400/15 blur-3xl" />
+          <section className="relative overflow-hidden rounded-xl border border-black/5 px-6 py-16 text-white shadow-[0_40px_90px_-45px_rgba(29,25,18,0.7)] sm:px-10 lg:px-14 lg:py-20">
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: 'url("/images/hero.png")' }}
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(15,23,42,0.86),rgba(15,118,110,0.62),rgba(2,132,199,0.52))]" />
+            <div className="absolute -right-16 top-8 h-56 w-56 rounded-xl bg-white/10 blur-3xl" />
+            <div className="absolute bottom-0 left-0 h-64 w-64 rounded-xl bg-sky-400/15 blur-3xl" />
 
             <div className="relative grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
               <div className="max-w-3xl">
-                <span className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-white/80">
+                <span className="inline-flex rounded-xl border border-white/15 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-white/80">
                   Fresh, trusted city stays
                 </span>
                 <h1 className="mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl" style={{ fontFamily: "var(--font-display)" }}>
@@ -233,7 +237,7 @@ export const Home = () => {
 
                 <div className="mt-8 flex flex-wrap gap-3 text-sm text-white/75">
                   {["Admin-verified listings", "Easy owner onboarding", "Fast booking journey"].map((item) => (
-                    <span key={item} className="rounded-full border border-white/12 bg-white/10 px-4 py-2">
+                    <span key={item} className="rounded-xl border border-white/12 bg-white/10 px-4 py-2">
                       {item}
                     </span>
                   ))}
@@ -241,7 +245,7 @@ export const Home = () => {
               </div>
 
               <div className="surface-card relative z-10 space-y-4 p-5 text-ink-900 sm:p-6">
-                <div className="rounded-3xl border border-brand-100 bg-brand-50/70 p-5">
+                <div className="rounded-xl border border-brand-100 bg-brand-50/70 p-5">
                   <p className="text-sm font-semibold text-ink-900">Search using GPS location</p>
                   <p className="mt-2 text-sm leading-7 text-ink-500">
                     We can use your current location to detect your city and open nearby PG listings automatically.
@@ -336,8 +340,8 @@ export const Home = () => {
 
       <PageSection className="bg-white/45">
         <PageShell>
-          <div className="grid gap-6 overflow-hidden rounded-[2rem] border border-black/5 bg-white/85 p-6 shadow-[0_28px_70px_-40px_rgba(30,25,18,0.35)] lg:grid-cols-[0.9fr_1.1fr] lg:p-8">
-            <div className="rounded-[1.5rem] bg-ink-900 p-6 text-white">
+          <div className="grid gap-6 overflow-hidden rounded-xl border border-black/5 bg-white/85 p-6 shadow-[0_28px_70px_-40px_rgba(30,25,18,0.35)] lg:grid-cols-[0.9fr_1.1fr] lg:p-8">
+            <div className="rounded-xl bg-ink-900 p-6 text-white">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/70">Customer Reviews</p>
               <div className="mt-5 flex items-center gap-1 text-amber-300">
                 {Array.from({ length: 5 }).map((_, index) => {
@@ -364,10 +368,10 @@ export const Home = () => {
               </p>
             </div>
 
-            <div className="rounded-[1.5rem] bg-brand-50/75 p-6">
+            <div className="rounded-xl bg-brand-50/75 p-6">
               <div className="flex items-center justify-between gap-4">
                 <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-600">Review data</p>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink-600 shadow-sm">
+                <span className="rounded-xl bg-white px-3 py-1 text-xs font-semibold text-ink-600 shadow-sm">
                   Real user look
                 </span>
               </div>
@@ -376,9 +380,9 @@ export const Home = () => {
                 {normalizedReviewBreakdown.map((item) => (
                   <div key={item.label} className="grid gap-2 sm:grid-cols-[10rem_1fr_auto] sm:items-center sm:gap-4">
                     <p className="text-sm font-medium text-ink-700">{item.label}</p>
-                    <div className="h-3 overflow-hidden rounded-full bg-white shadow-inner">
+                    <div className="h-3 overflow-hidden rounded-xl bg-white shadow-inner">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-sky-500 via-cyan-500 to-brand-500"
+                        className="h-full rounded-xl bg-gradient-to-r from-sky-500 via-cyan-500 to-brand-500"
                         style={{ width: `${item.percentage}%` }}
                       />
                     </div>
@@ -408,7 +412,7 @@ export const Home = () => {
               [Building2, "Book faster", "Save favorites, confirm availability, and move ahead with less friction."],
             ].map(([icon, title, description], index) => (
               <div key={title} className="surface-card p-7">
-                <div className="gradient-primary flex h-12 w-12 items-center justify-center rounded-2xl text-white">
+                <div className="gradient-primary flex h-12 w-12 items-center justify-center rounded-xl text-white">
                   {createElement(icon, { size: 22 })}
                 </div>
                 <p className="mt-6 text-xs font-semibold uppercase tracking-[0.24em] text-brand-500">0{index + 1}</p>
@@ -422,7 +426,7 @@ export const Home = () => {
 
       <PageSection>
         <PageShell>
-          <div className="gradient-hero overflow-hidden rounded-[2rem] px-6 py-12 text-center text-white sm:px-10 lg:px-16 lg:py-16">
+          <div className="gradient-hero overflow-hidden rounded-xl px-6 py-12 text-center text-white sm:px-10 lg:px-16 lg:py-16">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl" style={{ fontFamily: "var(--font-display)" }}>
               Start exploring trusted accommodation today
             </h2>
@@ -439,3 +443,5 @@ export const Home = () => {
     </div>
   );
 };
+
+

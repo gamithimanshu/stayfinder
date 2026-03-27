@@ -155,7 +155,7 @@ export function AdminBookings() {
         title="Manage Bookings"
         description="Loading booking actions..."
       >
-        <SurfaceCard className="rounded-3xl border border-black/5 bg-white/85 p-10 text-center text-slate-500">
+        <SurfaceCard className="rounded-xl border border-black/5 bg-white/85 p-10 text-center text-slate-500">
           Loading admin bookings...
         </SurfaceCard>
       </DashboardLayout>
@@ -188,7 +188,7 @@ export function AdminBookings() {
             <button
               key={status}
               type="button"
-              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+              className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
                 statusFilter === status
                   ? "bg-sky-100 text-sky-800"
                   : "bg-white text-slate-600 hover:bg-slate-50"
@@ -207,17 +207,17 @@ export function AdminBookings() {
           { label: "Confirmed", value: toArray(bookings).filter((booking) => booking?.bookingStatus === "confirmed").length, accent: "bg-sky-100 text-sky-700" },
           { label: "Cancelled", value: toArray(bookings).filter((booking) => booking?.bookingStatus === "cancelled").length, accent: "bg-rose-100 text-rose-700" },
         ].map((item) => (
-          <SurfaceCard key={item.label} className="rounded-3xl border border-black/5 bg-white/90 p-6 shadow-sm">
+          <SurfaceCard key={item.label} className="rounded-xl border border-black/5 bg-white/90 p-6 shadow-sm">
             <p className="text-sm text-slate-500">{item.label} Bookings</p>
             <div className="mt-3 flex items-center justify-between">
               <p className="text-3xl font-semibold text-slate-900">{item.value}</p>
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${item.accent}`}>{item.label}</span>
+              <span className={`rounded-xl px-3 py-1 text-xs font-semibold ${item.accent}`}>{item.label}</span>
             </div>
           </SurfaceCard>
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-xl">
+      <div className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-xl">
         <div className="flex flex-col gap-3 border-b bg-slate-50 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <div>
             <p className="text-sm font-medium text-slate-700">Booking queue</p>
@@ -259,12 +259,12 @@ export function AdminBookings() {
                     <td className="px-6 py-5 text-slate-600 sm:px-8">{formatDate(booking.checkInDate)}</td>
                     <td className="px-6 py-5 text-slate-600 sm:px-8">{formatDashboardCurrency(booking.totalAmount)}</td>
                     <td className="px-6 py-5 sm:px-8">
-                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${paymentTone(booking.paymentStatus)}`}>
+                      <span className={`inline-flex rounded-xl px-3 py-1 text-xs font-medium ${paymentTone(booking.paymentStatus)}`}>
                         {booking.paymentStatus || "pending"}
                       </span>
                     </td>
                     <td className="px-6 py-5 sm:px-8">
-                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${bookingTone(booking.bookingStatus)}`}>
+                      <span className={`inline-flex rounded-xl px-3 py-1 text-xs font-medium ${bookingTone(booking.bookingStatus)}`}>
                         {booking.bookingStatus || "pending"}
                       </span>
                     </td>
@@ -306,3 +306,5 @@ export function AdminBookings() {
     </DashboardLayout>
   );
 }
+
+

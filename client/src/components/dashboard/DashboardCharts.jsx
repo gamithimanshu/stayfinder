@@ -45,7 +45,7 @@ const hasData = (chart) => {
 
 function EmptyChartState({ message = "No chart data available yet." }) {
   return (
-    <div className="flex h-[260px] items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-slate-50 text-center text-sm text-slate-500">
+    <div className="flex h-[260px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center text-sm text-slate-500">
       <p className="max-w-xs">{message}</p>
     </div>
   );
@@ -53,7 +53,7 @@ function EmptyChartState({ message = "No chart data available yet." }) {
 
 function ChartCardShell({ title, subtitle, children, footer }) {
   return (
-    <SurfaceCard className="rounded-3xl border border-black/5 bg-white/90 p-6 shadow-sm">
+    <SurfaceCard className="rounded-xl border border-black/5 bg-white/90 p-6 shadow-sm">
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-ink-700">{title}</p>
@@ -102,8 +102,8 @@ export function DonutChartCard({ title, subtitle, chart, valueFormatter = format
 
           <div className="mt-3 flex flex-wrap gap-3">
             {safeData.map((entry) => (
-              <div key={`legend-${entry.label}`} className="flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color || "#0f766e" }} />
+              <div key={`legend-${entry.label}`} className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-1.5">
+                <span className="h-2.5 w-2.5 rounded-xl" style={{ backgroundColor: entry.color || "#0f766e" }} />
                 <span className="text-xs font-medium text-slate-700">
                   {entry.label}: {valueFormatter(entry.value)}
                 </span>
@@ -193,4 +193,6 @@ export function TrendChartCard({ title, subtitle, chart, valueFormatter = format
     </ChartCardShell>
   );
 }
+
+
 

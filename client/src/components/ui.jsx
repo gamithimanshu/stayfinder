@@ -80,7 +80,7 @@ export function StatCard({ icon: Icon, label, value }) {
           <p className="mt-2 text-3xl text-ink-900" style={{ fontFamily: "var(--font-display)" }}>{value}</p>
         </div>
         {Icon ? (
-          <div className="gradient-primary rounded-2xl p-3 text-white">
+          <div className="gradient-primary rounded-xl p-3 text-white">
             <Icon size={22} />
           </div>
         ) : null}
@@ -91,7 +91,7 @@ export function StatCard({ icon: Icon, label, value }) {
 
 export function EmptyState({ title, description, actionLabel, actionTo }) {
   return (
-    <div className="rounded-[1.75rem] border border-dashed border-brand-200 bg-white/85 px-6 py-12 text-center shadow-[0_18px_50px_-28px_rgba(30,25,18,0.35)]">
+    <div className="rounded-xl border border-dashed border-brand-200 bg-white/85 px-6 py-12 text-center shadow-[0_18px_50px_-28px_rgba(30,25,18,0.35)]">
       <h3 className="text-xl font-semibold text-ink-900">{title}</h3>
       <p className="mx-auto mt-3 max-w-xl text-sm text-ink-500">{description}</p>
       {actionLabel && actionTo ? (
@@ -105,9 +105,9 @@ export function EmptyState({ title, description, actionLabel, actionTo }) {
 
 export function FormField({ label, hint, children }) {
   return (
-    <label className="block space-y-1.5">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-medium text-ink-700">{label}</span>
+    <label className="block min-w-0 space-y-1.5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="min-w-0 text-sm font-medium text-ink-700">{label}</span>
         {hint ? <span className="text-xs text-ink-400">{hint}</span> : null}
       </div>
       {children}
@@ -130,7 +130,7 @@ export function SelectInput({ className = "", ...props }) {
 export function RatingPill({ averageRating, reviewCount, className = "", compact = false }) {
   if (!reviewCount || !averageRating) {
     return (
-      <span className={cn("inline-flex items-center gap-2 rounded-full bg-ink-100 px-3 py-1.5 text-sm font-medium text-ink-500", className)}>
+      <span className={cn("inline-flex items-center gap-2 rounded-xl bg-ink-100 px-3 py-1.5 text-sm font-medium text-ink-500", className)}>
         <MessageSquare size={14} />
         No ratings yet
       </span>
@@ -142,7 +142,7 @@ export function RatingPill({ averageRating, reviewCount, className = "", compact
 
   if (compact) {
     return (
-      <div className={cn("flex items-center gap-2 rounded-full bg-white px-3 py-2 shadow-sm shadow-slate-200", className)}>
+      <div className={cn("flex items-center gap-2 rounded-xl bg-white px-3 py-2 shadow-sm shadow-slate-200", className)}>
         <div className="flex items-center gap-1 text-yellow-500">
           {Array.from({ length: 5 }).map((_, index) => {
             const isFilled = index < filledStars;
@@ -224,3 +224,5 @@ export function PropertyCard({
     </Link>
   );
 }
+
+

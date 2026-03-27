@@ -232,31 +232,31 @@ export function PaymentCheckout() {
                 This simulates a real payment experience for your project. Later, you can connect the same flow to a live provider.
               </p>
 
-              <div className="rounded-3xl border border-black/5 bg-sky-50/70 p-5">
+              <div className="rounded-xl border border-black/5 bg-sky-50/70 p-5">
                 <h2 className="text-xl font-semibold text-ink-900">{pg.title}</h2>
                 <p className="mt-2 text-sm text-ink-500">{pg.location || pg.address}</p>
                 <div className="mt-4 space-y-3">
-                  <div className="flex items-center justify-between gap-4 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                     <span className="text-ink-500">Booking ID</span>
-                    <strong className="text-ink-900">{booking._id}</strong>
+                    <strong className="max-w-full break-all text-ink-900">{booking._id}</strong>
                   </div>
-                  <div className="flex items-center justify-between gap-4 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                     <span className="text-ink-500">Payment Status</span>
                     <strong className={payment.paymentStatus === "paid" ? "text-emerald-700" : payment.paymentStatus === "failed" ? "text-rose-700" : "text-brand-700"}>
                       {payment.paymentStatus}
                     </strong>
                   </div>
-                  <div className="flex items-center justify-between gap-4 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                     <span className="text-ink-500">Selected Method</span>
                     <strong className="text-ink-900">{paymentLabels[selectedMethod] || selectedMethod}</strong>
                   </div>
-                  <div className="flex items-center justify-between gap-4 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                     <span className="text-ink-500">Booking Status</span>
                     <strong className={booking.bookingStatus === "cancelled" ? "text-rose-700" : booking.bookingStatus === "pending" ? "text-amber-700" : "text-emerald-700"}>
                       {booking.bookingStatus}
                     </strong>
                   </div>
-                  <div className="flex items-center justify-between gap-4 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                     <span className="text-ink-500">Amount</span>
                     <strong className="text-ink-900">Rs. {Number(payment.amount || booking.totalAmount || 0).toLocaleString()}</strong>
                   </div>
@@ -264,11 +264,11 @@ export function PaymentCheckout() {
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-black/5 bg-white p-4 text-sm text-ink-600">
+                <div className="rounded-xl border border-black/5 bg-white p-4 text-sm text-ink-600">
                   <div className="mb-2 text-sky-700"><ShieldCheck size={18} /></div>
                   Pending payment state is stored in the database.
                 </div>
-                <div className="rounded-2xl border border-black/5 bg-white p-4 text-sm text-ink-600">
+                <div className="rounded-xl border border-black/5 bg-white p-4 text-sm text-ink-600">
                   <div className="mb-2 text-sky-700"><CheckCircle2 size={18} /></div>
                   You can later replace this with a real gateway callback.
                 </div>
@@ -278,11 +278,11 @@ export function PaymentCheckout() {
 
           <div className="xl:sticky xl:top-24 h-fit">
             <SurfaceCard className="p-8">
-              <div className="flex items-center gap-3">
-                <div className="rounded-2xl bg-sky-50 p-3 text-sky-700">
+              <div className="flex items-start gap-3">
+                <div className="rounded-xl bg-sky-50 p-3 text-sky-700">
                   <MethodIcon size={20} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h2 className="text-2xl text-ink-900" style={{ fontFamily: "var(--font-display)" }}>Choose payment method</h2>
                   <p className="text-sm text-ink-500">Use this simulated checkout now and plug in a provider later.</p>
                 </div>
@@ -295,7 +295,7 @@ export function PaymentCheckout() {
                   <button
                     key={option.id}
                     type="button"
-                    className={`rounded-2xl border p-4 text-left transition ${
+                    className={`rounded-xl border p-4 text-left transition ${
                       selectedMethod === option.id
                         ? "border-brand-400 bg-sky-50"
                         : "border-black/5 bg-white hover:border-sky-200"
@@ -319,7 +319,7 @@ export function PaymentCheckout() {
 
             <div className="mt-6 space-y-5">
               {selectedMethod === "upi" ? (
-                <div className="rounded-2xl border border-black/5 bg-sky-50/60 p-4">
+                <div className="rounded-xl border border-black/5 bg-sky-50/60 p-4">
                   <p className="text-sm font-semibold text-ink-900">Accepted UPI-style wallets</p>
                   <div className="mt-3 flex items-center gap-4 text-3xl text-[#1676d2]">
                     <FaGooglePay />
@@ -329,9 +329,9 @@ export function PaymentCheckout() {
               ) : null}
 
               {selectedMethod === "card" ? (
-                <div className="rounded-2xl border border-black/5 bg-sky-50/60 p-4">
+                <div className="rounded-xl border border-black/5 bg-sky-50/60 p-4">
                   <p className="text-sm font-semibold text-ink-900">Supported card networks</p>
-                  <div className="mt-3 flex items-center gap-4 text-4xl">
+                  <div className="mt-3 flex flex-wrap items-center gap-4 text-4xl">
                     <FaCcVisa className="text-[#1a1f71]" />
                     <FaCcMastercard className="text-[#eb001b]" />
                   </div>
@@ -382,12 +382,12 @@ export function PaymentCheckout() {
               ) : null}
             </div>
 
-            <div className="mt-6 rounded-3xl border border-black/5 bg-ink-50/70 p-5">
-              <div className="flex items-center justify-between gap-4 text-sm">
+            <div className="mt-6 rounded-xl border border-black/5 bg-ink-50/70 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                 <span className="text-ink-500">Booking amount</span>
                 <strong className="text-ink-900">Rs. {Number(payment.amount || booking.totalAmount || 0).toLocaleString()}</strong>
               </div>
-              <div className="mt-3 flex items-center justify-between gap-4 text-sm">
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm">
                 <span className="text-ink-500">Simulation mode</span>
                 <strong className="text-ink-900">No real gateway connected</strong>
               </div>
@@ -444,3 +444,5 @@ export function PaymentCheckout() {
     </PageSection>
   );
 }
+
+

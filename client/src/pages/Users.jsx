@@ -134,7 +134,7 @@ export function Users() {
         title="Admin panel"
         description="Loading users and messages..."
       >
-        <SurfaceCard className="rounded-3xl border border-black/5 bg-white/85 p-10 text-center text-ink-500">
+        <SurfaceCard className="rounded-xl border border-black/5 bg-white/85 p-10 text-center text-ink-500">
           Loading users and messages...
         </SurfaceCard>
       </DashboardLayout>
@@ -149,7 +149,7 @@ export function Users() {
       description="Manage platform users and support messages."
     >
       <div className="space-y-8">
-        <div className="rounded-[2rem] bg-gradient-to-br from-slate-50 via-indigo-50 to-sky-100 p-6 shadow-[0_32px_90px_-48px_rgba(30,41,59,0.38)] sm:p-8 lg:p-10">
+        <div className="rounded-xl bg-gradient-to-br from-slate-50 via-indigo-50 to-sky-100 p-6 shadow-[0_32px_90px_-48px_rgba(30,41,59,0.38)] sm:p-8 lg:p-10">
           <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-indigo-600">Admin users</p>
@@ -182,13 +182,13 @@ export function Users() {
               { label: "Residents", value: nonAdminUsers.filter((item) => item.role === "user").length, accent: "bg-emerald-100 text-emerald-600", icon: UserRound },
               { label: "Messages", value: messages.length, accent: "bg-amber-100 text-amber-600", icon: MessageSquareText },
             ].map(({ label, value, accent, icon }) => (
-              <div key={label} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div key={label} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs uppercase tracking-[0.18em] text-slate-500">{label}</p>
                     <p className="mt-3 text-3xl font-semibold text-slate-800">{value}</p>
                   </div>
-                  <div className={`rounded-2xl p-3 ${accent}`}>
+                  <div className={`rounded-xl p-3 ${accent}`}>
                     {createElement(icon, { size: 20 })}
                   </div>
                 </div>
@@ -197,7 +197,7 @@ export function Users() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-xl">
+        <div className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-xl">
           <div className="flex flex-col gap-3 border-b bg-slate-50 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
             <div>
               <p className="text-sm font-medium text-slate-600">User management</p>
@@ -228,7 +228,7 @@ export function Users() {
                     <tr key={item._id} className="transition hover:bg-indigo-50/60">
                       <td className="px-6 py-5 sm:px-8">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-sm font-semibold text-indigo-700">
                             {(item.username || item.name || "U").slice(0, 2).toUpperCase()}
                           </div>
                           <div>
@@ -240,7 +240,7 @@ export function Users() {
                       <td className="break-words px-6 py-5 text-slate-600 sm:px-8">{item.email || "No email"}</td>
                       <td className="break-words px-6 py-5 text-slate-600 sm:px-8">{item.phone || "No phone"}</td>
                       <td className="px-6 py-5 sm:px-8">
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                        <span className={`inline-flex rounded-xl px-3 py-1 text-xs font-medium ${
                           item.role === "owner"
                             ? "bg-amber-100 text-amber-700"
                             : "bg-emerald-100 text-emerald-700"
@@ -266,7 +266,7 @@ export function Users() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-xl">
+        <div className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-xl">
           <div className="flex flex-col gap-3 border-b bg-slate-50 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
             <div>
               <p className="text-sm font-medium text-slate-600">Contact messages</p>
@@ -326,3 +326,5 @@ export function Users() {
     </DashboardLayout>
   );
 }
+
+
