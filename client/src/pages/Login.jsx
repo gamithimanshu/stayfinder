@@ -34,6 +34,8 @@ export const Login = () => {
   }
 
   const onSubmit = async (values) => {
+    setFormError("");
+    setFormTone("error");
     setSubmitting(true);
     try {
       const { data } = await API.post("/auth/login", values);
@@ -54,7 +56,10 @@ export const Login = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
-      const message = error?.response?.data?.message || "Login failed. Please try again.";
+      const apiMessage = error?.response?.data?.message;
+      const apiDetails = error?.response?.data?.details;
+      const detailMessage = Array.isArray(apiDetails) && apiDetails.length ? apiDetails[0] : "";
+      const message = detailMessage || apiMessage || "Login failed. Please try again.";
       setFormError(message);
       setFormTone("error");
       toastError(message);

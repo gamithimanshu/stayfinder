@@ -16,6 +16,16 @@ export const Contact = () => {
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] = useState("info");
 
+  const getRequestMessage = (requestError) => {
+    const details = requestError?.response?.data?.details;
+
+    if (Array.isArray(details) && details.length > 0) {
+      return details.join(" ");
+    }
+
+    return requestError?.response?.data?.message || "Unable to send your message";
+  };
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     if (message) {
@@ -39,7 +49,7 @@ export const Contact = () => {
       setFormData(initialForm);
     } catch (requestError) {
       setMessageTone("error");
-      setMessage(requestError?.response?.data?.message || "Unable to send your message");
+      setMessage(getRequestMessage(requestError));
     } finally {
       setSending(false);
     }
@@ -52,7 +62,7 @@ export const Contact = () => {
           <PageIntro
             kicker="Contact"
             title="Reach the StayFinder team for help, support, or partnerships."
-            description="Send us a message through the form and we will store it for follow-up through the backend contact flow."
+            description="Send us a message through the form and we will deliver it to the StayFinder inbox while also saving it for follow-up."
           />
 
           <div className="mx-auto w-full max-w-3xl">

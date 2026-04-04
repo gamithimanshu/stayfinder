@@ -5,13 +5,48 @@ const User = require("../models/user-models");
 const Contact = require("../models/contact-model");
 
 const resolvePublicPgFilter = async () => {
-  return {}; // DEV: Show all PGs to fix empty collections immediately
+  return { isApproved: true };
+};
+
+const buildReviewStatsMap = async (pgIds = []) => {
+  const safePgIds = Array.isArray(pgIds) ? pgIds.filter(Boolean) : [];
+
+  if (safePgIds.length === 0) {
+    return new Map();
+  }
+
+  const reviewSummaries = await Review.aggregate([
+    {
+      $match: {
+        pgId: { $in: safePgIds },
+      },
+    },
+    {
+      $group: {
+        _id: "$pgId",
+        reviewCount: { $sum: 1 },
+        averageRating: { $avg: "$rating" },
+      },
+    },
+  ]);
+
+  return new Map(
+    reviewSummaries.map((item) => [
+      String(item._id),
+      {
+        reviewCount: Number(item.reviewCount || 0),
+        averageRating: Number.isFinite(Number(item.averageRating))
+          ? Number(Number(item.averageRating).toFixed(1))
+          : 0,
+      },
+    ])
+  );
 };
 
 const listAllPgs = async (req, res, next) => {
   try {
     const { city = "", price = "", gender = "" } = req.query;
-    const query = await resolvePublicPgFilter();
+    const query = { ...(await resolvePublicPgFilter()) };
 
     if (city.trim()) {
       query.$or = [
@@ -33,26 +68,21 @@ const listAllPgs = async (req, res, next) => {
       }
     }
 
-    // Lean allows us to add properties to the object before sending
     const pgs = await Pg.find(query).sort({ createdAt: -1 }).populate("ownerId", "username name email phone").lean();
+    const reviewStatsByPgId = await buildReviewStatsMap(pgs.map((pg) => pg._id));
 
-    // Attach review stats to each PG so the frontend can display stars
-    const pgsWithStats = await Promise.all(
-      pgs.map(async (pg) => {
-        const reviews = await Review.find({ pgId: pg._id }).select("rating");
-        const reviewCount = reviews.length;
-        const averageRating = reviewCount
-          ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1))
-          : 0;
-        
-        return {
-          ...pg,
-          reviewCount,
-          averageRating,
-          reviews: reviews, // Keep for frontend normalization
-        };
-      })
-    );
+    const pgsWithStats = pgs.map((pg) => {
+      const reviewStats = reviewStatsByPgId.get(String(pg._id)) || {
+        reviewCount: 0,
+        averageRating: 0,
+      };
+
+      return {
+        ...pg,
+        reviewCount: reviewStats.reviewCount,
+        averageRating: reviewStats.averageRating,
+      };
+    });
 
     return res.status(200).json({ pgs: pgsWithStats });
   } catch (error) {
@@ -138,7 +168,7 @@ const reverseGeocode = async (req, res, next) => {
 
 const getPgById = async (req, res, next) => {
   try {
-    const publicFilter = {}; // DEV: Match listAllPgs
+    const publicFilter = await resolvePublicPgFilter();
     const pg = await Pg.findOne({ _id: req.params.id, ...publicFilter }).populate("ownerId", "username name email phone");
     if (!pg) {
       return res.status(404).json({ message: "PG not found" });
@@ -146,14 +176,12 @@ const getPgById = async (req, res, next) => {
 
     const reviewDocs = await Review.find({ pgId: pg._id }).sort({ createdAt: -1 });
     const payload = pg.toObject();
-    if (reviewDocs.length > 0) {
-      payload.reviews = reviewDocs.map((item) => ({
-        _id: item._id,
-        name: item.name,
-        rating: item.rating,
-        comment: item.comment,
-      }));
-    }
+    payload.reviews = reviewDocs.map((item) => ({
+      _id: item._id,
+      name: item.name,
+      rating: item.rating,
+      comment: item.comment,
+    }));
 
     return res.status(200).json({ pg: payload });
   } catch (error) {

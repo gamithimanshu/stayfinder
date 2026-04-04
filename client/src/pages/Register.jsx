@@ -34,6 +34,8 @@ export const Register = () => {
   }
 
   const onSubmit = async (values) => {
+    setFormError("");
+    setFormTone("error");
     setSubmitting(true);
     try {
       const payload = {
@@ -61,7 +63,10 @@ export const Register = () => {
       }
     } catch (error) {
       console.error("Register error:", error);
-      const message = error?.response?.data?.message || "Unable to create account.";
+      const apiMessage = error?.response?.data?.message;
+      const apiDetails = error?.response?.data?.details;
+      const detailMessage = Array.isArray(apiDetails) && apiDetails.length ? apiDetails[0] : "";
+      const message = detailMessage || apiMessage || "Unable to create account.";
       setFormError(message);
       setFormTone("error");
       toastError(message);
@@ -92,7 +97,10 @@ export const Register = () => {
                   className="pl-11"
                   type="text"
                   placeholder="Enter your name"
-                  {...register("name", { required: "Name is required" })}
+                  {...register("name", {
+                    required: "Name is required",
+                    minLength: { value: 3, message: "Name must be at least 3 characters" },
+                  })}
                 />
               </div>
               {errors.name ? <p className="text-xs text-rose-600">{errors.name.message}</p> : null}
@@ -116,7 +124,11 @@ export const Register = () => {
                   className="pl-11"
                   type="tel"
                   placeholder="Enter phone"
-                  {...register("phone", { required: "Phone is required" })}
+                  {...register("phone", {
+                    required: "Phone is required",
+                    minLength: { value: 10, message: "Phone must be at least 10 characters" },
+                    maxLength: { value: 20, message: "Phone must not be more than 20 characters" },
+                  })}
                 />
               </div>
               {errors.phone ? <p className="text-xs text-rose-600">{errors.phone.message}</p> : null}

@@ -1,6 +1,24 @@
 const ContactMessage = require("../models/contact-model");
 const { hasMailConfig, sendContactEmail } = require("../utils/mailer");
 
+const getMailErrorMessage = (error) => {
+  const rawMessage = String(error?.message || "").trim();
+
+  if (!rawMessage) {
+    return "Message was saved, but email delivery failed. Please verify the SMTP settings and try again.";
+  }
+
+  if (error?.code === "EAUTH") {
+    return "Message was saved, but Gmail rejected the server login. Please check the SMTP email and app password.";
+  }
+
+  if (error?.code === "ECONNECTION" || error?.code === "ETIMEDOUT") {
+    return "Message was saved, but the server could not reach Gmail. Please check the SMTP host, port, and network access.";
+  }
+
+  return `Message was saved, but email delivery failed: ${rawMessage}`;
+};
+
 const createContactMessage = async (req, res, next) => {
   try {
     const contact = await ContactMessage.create({
@@ -17,16 +35,27 @@ const createContactMessage = async (req, res, next) => {
       });
     }
 
-    await sendContactEmail({
-      name: contact.name,
-      email: contact.email,
-      subject: contact.subject,
-      message: contact.message,
-    });
+    try {
+      await sendContactEmail({
+        name: contact.name,
+        email: contact.email,
+        subject: contact.subject,
+        message: contact.message,
+      });
+    } catch (mailError) {
+      console.error("Contact email delivery failed:", mailError.message);
+
+      return res.status(502).json({
+        message: getMailErrorMessage(mailError),
+        contact,
+        emailDelivered: false,
+      });
+    }
 
     return res.status(201).json({
       message: "Message sent successfully",
       contact,
+      emailDelivered: true,
     });
   } catch (error) {
     return next(error);
