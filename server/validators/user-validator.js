@@ -23,6 +23,7 @@ const updateProfileSchema = z
       .trim()
       .min(10, { message: "Phone must be at least 10 characters" })
       .max(20, { message: "Phone must not be more than 20 characters" }),
+    profileImage: z.string().trim().optional().or(z.literal("")),
     currentPassword: z.string().trim().optional().or(z.literal("")),
     newPassword: z
       .string()

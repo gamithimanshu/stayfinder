@@ -26,6 +26,7 @@ const updateProfile = async (req, res, next) => {
       username,
       email,
       phone,
+      profileImage,
       currentPassword,
       newPassword,
     } = req.body;
@@ -46,6 +47,7 @@ const updateProfile = async (req, res, next) => {
     user.name = (name || username || "").trim();
     user.email = normalizedEmail;
     user.phone = phone.trim();
+    user.profileImage = String(profileImage || "").trim();
 
     if (newPassword) {
       const isPasswordValid = await user.comparePassword(currentPassword);

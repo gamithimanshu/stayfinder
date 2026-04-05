@@ -1,11 +1,43 @@
 import { useEffect, useState } from "react";
-import { CalendarClock, CreditCard, House, KeyRound, Mail, Phone, UserRound } from "lucide-react";
+import { CalendarClock, CreditCard, House, ImagePlus, KeyRound, Mail, Phone, UserRound } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth-context";
 import { API } from "../utils/api";
-import { FormField, InfoBanner, PageIntro, PageSection, PageShell, SurfaceCard, TextInput } from "../components/ui.jsx";
+import { FormField, InfoBanner, PageIntro, PageSection, PageShell, SafeImage, SurfaceCard, TextInput } from "../components/ui.jsx";
 
 const toArray = (value) => (Array.isArray(value) ? value : []);
+const PROFILE_FALLBACK =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNDAiIGhlaWdodD0iMjQwIiB2aWV3Qm94PSIwIDAgMjQwIDI0MCI+PHJlY3Qgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyNDAiIGZpbGw9IiNlZmY2ZmYiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSI5MCIgcj0iNDIiIGZpbGw9IiM5NGEzYjgiLz48cGF0aCBkPSJNNTIgMjA0YzEyLTM0IDQxLTU0IDY4LTU0czU2IDIwIDY4IDU0IiBmaWxsPSIjOTRhM2I4Ii8+PC9zdmc+";
+
+const compressImageToDataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const maxSize = 320;
+        const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d");
+
+        if (!context) {
+          reject(new Error("Canvas not supported"));
+          return;
+        }
+
+        context.drawImage(image, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.78));
+      };
+      image.onerror = () => reject(new Error("Unable to load image"));
+      image.src = String(reader.result || "");
+    };
+    reader.onerror = () => reject(new Error("Unable to read image"));
+    reader.readAsDataURL(file);
+  });
 
 const formatDate = (value, options = {}) => {
   if (!value) return "Recently";
@@ -46,6 +78,7 @@ export function Profile() {
     name: "",
     email: "",
     phone: "",
+    profileImage: "",
     currentPassword: "",
     newPassword: "",
   });
@@ -76,6 +109,7 @@ export function Profile() {
             name: data?.user?.name ?? data?.user?.username ?? "",
             email: data?.user?.email ?? "",
             phone: data?.user?.phone ?? "",
+            profileImage: data?.user?.profileImage ?? "",
           }));
           setBookings(toArray(bookingData?.bookings));
           syncUserInLS(data?.user ?? null);
@@ -109,6 +143,24 @@ export function Profile() {
       ...current,
       [name]: value,
     }));
+  };
+
+  const handleProfileImage = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const imageData = await compressImageToDataUrl(file);
+      setFormData((current) => ({
+        ...current,
+        profileImage: imageData,
+      }));
+      setMessage("");
+      setMessageTone("info");
+    } catch {
+      setMessageTone("error");
+      setMessage("Unable to load the selected profile image.");
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -175,20 +227,7 @@ export function Profile() {
         />
         {message ? <InfoBanner tone={messageTone}>{message}</InfoBanner> : null}
 
-        <div className="grid gap-8 xl:grid-cols-[0.78fr_1.22fr]">
-          <SurfaceCard className="space-y-5 p-8">
-            {[
-              ["Name", formData.name || "Not set"],
-              ["Email", formData.email || "Not set"],
-              ["Phone", formData.phone || "Not set"],
-            ].map(([label, value]) => (
-              <div key={label} className="border-b border-brand-100 pb-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-400">{label}</p>
-                <p className="mt-2 text-base font-semibold text-ink-900">{value}</p>
-              </div>
-            ))}
-          </SurfaceCard>
-
+        <div>
           <form onSubmit={handleSubmit} className="min-w-0">
             <SurfaceCard className="space-y-6 p-8">
               <div>
@@ -196,6 +235,22 @@ export function Profile() {
                 <h2 className="mt-1 panel-title">Update your details</h2>
                 <p className="mt-2 text-sm text-ink-500">Changes will be saved to your account and used in future bookings.</p>
               </div>
+
+            <FormField label="Profile Photo">
+              <div className="flex flex-col items-center gap-4 rounded-xl border border-brand-100 bg-brand-50/35 p-5 text-center">
+                <SafeImage
+                  src={formData.profileImage || PROFILE_FALLBACK}
+                  fallbackSrc={PROFILE_FALLBACK}
+                  alt={formData.name || "Profile photo"}
+                  className="h-28 w-28 rounded-full border border-brand-100 object-cover shadow-sm"
+                />
+                <label className="btn-secondary cursor-pointer">
+                  <ImagePlus size={16} />
+                  Upload photo
+                  <input type="file" accept="image/*" onChange={handleProfileImage} hidden />
+                </label>
+              </div>
+            </FormField>
 
             <FormField label="Name">
               <div className="relative">
