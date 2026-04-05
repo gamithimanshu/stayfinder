@@ -1,29 +1,65 @@
 # StayFinder
 
-StayFinder is a MERN stack PG and hostel management platform for residents, property owners, and admins. It includes listing discovery, bookings, payment tracking, wishlists, reviews, moderation workflows, and analytics dashboards for both admin and owner roles.
+StayFinder is a full-stack MERN project for discovering, managing, approving, and booking PGs and hostels. It supports three roles:
 
-## Highlights
+- `User`: browse listings, add wishlist items, book rooms, make simulated payments, and leave reviews
+- `Owner`: create and manage PG listings, track bookings, and view dashboard insights
+- `Admin`: approve listings, manage users, monitor bookings, and review platform analytics
 
-- Resident flow for browsing PGs, viewing details, booking rooms, and tracking payments
-- Owner workspace for creating listings, managing inventory, and monitoring revenue and bookings
-- Admin workspace for PG approvals, user management, support visibility, and platform analytics
-- MongoDB-backed booking and payment relations across `User -> Booking -> PG -> Payment`
-- Recharts-powered dashboards with monthly revenue, booking trends, top listings, and recent transactions
-- Defensive frontend loading, empty, and error states for production use
+This project is suitable for a BCA major project because it demonstrates full-stack development, role-based access control, CRUD operations, database relationships, dashboards, validation, and responsive UI design.
+
+## Key Features
+
+- JWT-based authentication and role-based authorization
+- PG listing discovery with filters for city, price, and gender
+- Detailed PG pages with gallery, amenities, reviews, and wishlist support
+- Booking flow with payment simulation
+- Contact form with backend storage and email delivery support
+- Owner dashboard for property management
+- Admin dashboard for approvals, bookings, users, and messages
+- Responsive design for desktop and mobile
 
 ## Tech Stack
 
-- Frontend: React, Vite, Tailwind CSS, Recharts, Axios
-- Backend: Node.js, Express
-- Database: MongoDB with Mongoose
-- Auth: JWT
+- Frontend: React, Vite, Tailwind CSS, Axios, Recharts, React Router
+- Backend: Node.js, Express, Mongoose, Zod
+- Database: MongoDB
+- Authentication: JWT
+- Mailer: Nodemailer
+
+## Module Overview
+
+### User Module
+
+- Register and login
+- Search PGs and hostels
+- View PG details
+- Add to wishlist
+- Book rooms
+- Simulate payment
+- Submit reviews
+- Send contact message
+
+### Owner Module
+
+- Add new PG listings
+- Update and delete own listings
+- View owner dashboard
+- Track recent bookings and property stats
+
+### Admin Module
+
+- Approve pending PG listings
+- View overall platform dashboard
+- Manage users
+- Manage booking statuses
+- Review contact messages
 
 ## Project Structure
 
 ```text
 StayFinder/
 |-- client/
-|   |-- public/
 |   |-- src/
 |   |   |-- components/
 |   |   |-- hooks/
@@ -40,31 +76,32 @@ StayFinder/
 |   |-- scripts/
 |   |-- utils/
 |   `-- validators/
+|-- docs/
+|   |-- TEST_CASES.md
+|   `-- VIVA_GUIDE.md
 `-- README.md
 ```
 
-## Core Modules
+## Database Entities
 
-- `server/models/user-models.js`: users, roles, and auth helpers
-- `server/models/pg-model.js`: PG/hostel listings and inventory
-- `server/models/booking-model.js`: booking lifecycle and totals
-- `server/models/payment-model.js`: payment status, amount, method, and transaction id
-- `server/utils/dashboard-analytics.js`: shared analytics layer for admin and owner dashboards
-- `client/src/pages/AdminDashboard.jsx`: platform analytics UI
-- `client/src/pages/OwnerDashboard.jsx`: owner analytics UI
+The main collections used in the project are:
 
-## Main Features
+- `users`
+- `pgs`
+- `bookings`
+- `payments`
+- `contacts`
+- `reviews`
+- `wishlists`
 
-- Authentication and role-based access
-- Public PG listing discovery
-- PG detail pages with reviews and wishlists
-- Booking creation and payment simulation flow
-- Owner listing creation, editing, and deletion
-- Admin PG approval and user management
-- Responsive analytics dashboards with revenue and booking charts
-- Auto-refreshing dashboard data after bookings and payment updates
+Important relationships:
 
-## API Summary
+- One user can create many bookings
+- One owner can create many PG listings
+- One PG can have many bookings and reviews
+- One booking is linked to one payment
+
+## Main API Routes
 
 ### Auth
 
@@ -74,11 +111,19 @@ StayFinder/
 
 ### PG / Listing
 
-- `GET /api/pg`
+- `GET /api/pg/all`
 - `GET /api/pg/:id`
+- `GET /api/pg/stats`
+- `GET /api/pg/reverse-geocode`
+
+### Owner
+
+- `GET /api/owner/dashboard`
+- `GET /api/owner/pgs`
 - `POST /api/owner/pgs`
 - `PUT /api/owner/pgs/:id`
 - `DELETE /api/owner/pgs/:id`
+- `GET /api/owner/bookings`
 
 ### Booking / Payment
 
@@ -86,15 +131,11 @@ StayFinder/
 - `GET /api/booking/:bookingId/payment`
 - `POST /api/booking/:bookingId/payment/process`
 
-### Owner
-
-- `GET /api/owner/dashboard`
-- `GET /api/owner/pgs`
-- `GET /api/owner/bookings`
-
 ### Admin
 
 - `GET /api/admin/dashboard`
+- `GET /api/admin/bookings`
+- `PATCH /api/admin/bookings/:bookingId/status`
 - `GET /api/admin/pgs/pending`
 - `PUT /api/admin/approve/:id`
 - `GET /api/admin/users`
@@ -103,38 +144,138 @@ StayFinder/
 ### Other
 
 - `POST /api/contact`
-- `GET /api/wishlist`
-- `POST /api/wishlist/:pgId`
-- `GET /api/review/:pgId`
-- `POST /api/review/:pgId`
+- `GET /api/contact`
+- `POST /api/wishlist/add`
+- `DELETE /api/wishlist/:id`
+- `POST /api/review/add`
 
 ## Local Setup
 
+### Prerequisites
+
+- Node.js 22.x
+- MongoDB local instance or MongoDB Atlas
+- npm
+
+### Installation
+
 1. Clone the repository.
-2. Install backend dependencies with `cd server && npm install`
-3. Install frontend dependencies with `cd ../client && npm install`
-4. Copy `server/.env.example` to `server/.env`
-5. Configure MongoDB connection values in `server/.env`
-6. Start the backend with `cd server && npm run dev`
-7. Start the frontend with `cd client && npm run dev`
-8. Open `http://localhost:5173`
+2. Install backend dependencies:
 
-## Sample Accounts
+```powershell
+cd server
+npm install
+```
 
-- Admin: `admin@stayfinder.com` / `Admin@123`
-- Owner: `owner@stayfinder.com` / `Owner@123`
-- User: `user@stayfinder.com` / `User@123`
+3. Install frontend dependencies:
 
-## Recent Dashboard Work
+```powershell
+cd ..\client
+npm install
+```
 
-- Fixed inconsistent earnings and booking totals by centralizing MongoDB aggregations
-- Added monthly revenue and booking trend datasets in frontend-ready chart format
-- Added top hostels and recent transactions sections for admin and owner dashboards
-- Added safer loading, empty, and error handling around dashboard API requests
-- Improved dashboard auto-refresh behavior for fresher analytics after payment and booking events
+4. Create environment files:
 
-## Verification
+- Copy `server/.env.example` to `server/.env`
+- Create `client/.env`
 
-- Frontend production build passes with `npm run build` inside `client`
-- Server analytics modules pass syntax checks with `node --check`
-- Current live-update behavior uses polling and focus refresh, and can be extended later with Socket.io if needed
+### Example Backend Environment
+
+```env
+PORT=5000
+DB_URI=mongodb://127.0.0.1:27017/stayfinder
+JWT_SECRET=replace-with-a-strong-secret
+JWT_EXPIRES_IN=7d
+CLIENT_ORIGIN=http://localhost:5173
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@example.com
+SMTP_PASS=your-app-password
+MAIL_FROM="StayFinder <your-email@example.com>"
+MAIL_TO=your-email@example.com
+```
+
+### Example Frontend Environment
+
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+### Run the Project
+
+Backend:
+
+```powershell
+cd server
+npm run dev
+```
+
+Frontend:
+
+```powershell
+cd client
+npm run dev
+```
+
+Open:
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:5000`
+
+## Recommended Demo Flow
+
+For project demonstration in class or viva:
+
+1. Login as owner
+2. Add a new PG listing
+3. Login as admin
+4. Approve the PG listing
+5. Login as user
+6. Search and open the approved PG
+7. Book the PG
+8. Complete simulated payment
+9. Show booking status and dashboard updates
+10. Show contact form and admin messages section
+
+## Sample Presentation Points
+
+- Problem Statement: Students and working people need a simple way to find verified PG/hostel accommodation
+- Proposed Solution: A role-based platform for listing, moderation, booking, and simulated payment
+- Frontend: Responsive React interface for user, owner, and admin
+- Backend: Express REST API with validation and role-based middleware
+- Database: MongoDB collections for users, listings, bookings, payments, and reviews
+- Result: A working multi-role accommodation platform
+
+## Verification Status
+
+Current project checks completed:
+
+- Frontend lint passes with `npm run lint`
+- Frontend production build passes with `npm run build`
+- Backend controller module checks are loading successfully
+
+Note:
+
+- Vite still shows a large chunk-size warning during build. This does not block project submission, but it can be improved later by code splitting.
+
+## Submission Tips
+
+- Do not submit real database passwords or email passwords publicly
+- Use screenshots in your report
+- Attach test cases from `docs/TEST_CASES.md`
+- Prepare viva answers from `docs/VIVA_GUIDE.md`
+
+## Future Scope
+
+- Real payment gateway integration
+- Real-time notifications
+- Advanced search and map filters
+- Room availability calendar
+- Email verification and forgot password
+- Online deployment with cloud image storage
+
+## Author
+
+- Project: StayFinder
+- Course: BCA Major Project
