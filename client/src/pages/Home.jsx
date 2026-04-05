@@ -215,7 +215,7 @@ export const Home = () => {
           <section className="relative overflow-hidden rounded-xl border border-black/5 px-5 py-10 text-white shadow-[0_40px_90px_-45px_rgba(29,25,18,0.7)] sm:px-10 sm:py-14 lg:px-14 lg:py-20">
             <div
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: 'url("/images/hero.png")' }}
+              style={{ backgroundImage: 'url("/images/Hero.jpg")' }}
             />
             <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(15,23,42,0.86),rgba(15,118,110,0.62),rgba(2,132,199,0.52))]" />
             <div className="absolute -right-16 top-8 h-56 w-56 rounded-xl bg-white/10 blur-3xl" />

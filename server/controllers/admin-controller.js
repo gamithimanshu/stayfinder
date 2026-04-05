@@ -68,7 +68,7 @@ const getPendingPgs = async (req, res, next) => {
   try {
     const pgs = await Pg.find({ isApproved: false })
       .populate("ownerId", "name email phone role isAdmin")
-      .sort({ createdAt: -1 });
+      .sort({ _id: -1 });
 
     return res.status(200).json({ pgs });
   } catch (error) {

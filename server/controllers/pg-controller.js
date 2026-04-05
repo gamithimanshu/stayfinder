@@ -66,7 +66,9 @@ const listAllPgs = async (req, res, next) => {
     }
 
     const pgs = await Pg.find(query)
-      .sort({ createdAt: -1 })
+      .select("ownerId title description city area address price gender roomType totalRooms availableRooms amenities images isApproved createdAt")
+      .slice("images", 1)
+      .sort({ _id: -1 })
       .populate("ownerId", "username name email phone")
       .lean();
     const reviewStatsByPgId = await buildReviewStatsMap(pgs.map((pg) => pg._id));
@@ -219,7 +221,7 @@ const getAdminDashboard = async (req, res, next) => {
       Contact.countDocuments(),
       Pg.countDocuments({ isApproved: false }),
       Pg.countDocuments({ isApproved: true }),
-      Pg.find({ isApproved: false }).sort({ createdAt: -1 }).limit(5).populate("ownerId", "username name"),
+      Pg.find({ isApproved: false }).sort({ _id: -1 }).limit(5).populate("ownerId", "username name"),
       Contact.find().sort({ createdAt: -1 }).limit(5),
     ]);
 
@@ -235,7 +237,7 @@ const getAdminDashboard = async (req, res, next) => {
 
 const getPendingPgs = async (req, res, next) => {
   try {
-    const pgs = await Pg.find({ isApproved: false }).populate("ownerId", "username name email phone");
+    const pgs = await Pg.find({ isApproved: false }).sort({ _id: -1 }).populate("ownerId", "username name email phone");
 
     return res.status(200).json({ pgs });
   } catch (error) {

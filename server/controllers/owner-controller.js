@@ -68,7 +68,7 @@ const getOwnerDashboard = async (req, res, next) => {
 
 const getOwnerPgs = async (req, res, next) => {
   try {
-    const pgs = await Pg.find({ ownerId: req.userId }).sort({ createdAt: -1 });
+    const pgs = await Pg.find({ ownerId: req.userId }).sort({ _id: -1 });
     return res.status(200).json({ pgs });
   } catch (error) {
     return next(error);

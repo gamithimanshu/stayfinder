@@ -6,6 +6,7 @@ const Pg = require("../models/pg-model");
 const User = require("../models/user-models");
 
 const MONTH_WINDOW = 6;
+const DASHBOARD_PG_FIELDS = "ownerId title city area address price gender roomType totalRooms availableRooms amenities isApproved createdAt";
 
 const shortMonthFormatter = new Intl.DateTimeFormat("en-US", { month: "short" });
 
@@ -636,7 +637,12 @@ const getPlatformDashboard = async () => {
     getMonthlyBookingChart(),
     getTopHostels(),
     getRecentTransactions(),
-    Pg.find({ isApproved: false }).populate("ownerId", "name email role isAdmin").sort({ createdAt: -1 }).limit(5).lean(),
+    Pg.find({ isApproved: false })
+      .select(DASHBOARD_PG_FIELDS)
+      .sort({ _id: -1 })
+      .limit(5)
+      .populate("ownerId", "name email role isAdmin")
+      .lean(),
     ContactMessage.find().sort({ createdAt: -1 }).limit(5).lean(),
     getRecentBookings(),
     getApprovalBreakdownChart(),
@@ -690,7 +696,10 @@ const getOwnerDashboardAnalytics = async (ownerId) => {
     recentBookings,
     approvalBreakdown,
   ] = await Promise.all([
-    Pg.find({ ownerId }).sort({ createdAt: -1 }).lean(),
+    Pg.find({ ownerId })
+      .select(DASHBOARD_PG_FIELDS)
+      .sort({ _id: -1 })
+      .lean(),
     getRevenueStatusSummary(ownerId),
     getBookingStatusSummary(ownerId),
     getMonthlyRevenueChart(ownerId),
