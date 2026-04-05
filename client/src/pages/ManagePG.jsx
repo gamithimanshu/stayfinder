@@ -54,6 +54,20 @@ const readFilesAsDataUrls = async (files) =>
     )
   );
 
+const buildOwnerPgPayload = (editForm, totalRooms, availableRooms, price) => ({
+  ...editForm,
+  area: editForm.location,
+  address: editForm.address || editForm.location,
+  totalRooms,
+  images: toArray(editForm.images).filter(Boolean),
+  amenities: String(editForm.amenities || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean),
+  price,
+  availableRooms,
+});
+
 export function ManagePG() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -212,16 +226,10 @@ export function ManagePG() {
     }
 
     try {
-      const { data } = await API.put(`/owner/pgs/${editingId}`, {
-        ...editForm,
-        area: editForm.location,
-        address: editForm.address || editForm.location,
-        totalRooms,
-        images: toArray(editForm.images).filter(Boolean),
-        amenities: String(editForm.amenities || "").split(",").map((item) => item.trim()).filter(Boolean),
-        price,
-        availableRooms,
-      });
+      const { data } = await API.put(
+        `/owner/pgs/${editingId}`,
+        buildOwnerPgPayload(editForm, totalRooms, availableRooms, price)
+      );
 
       setPgs((current) => toArray(current).map((pg) => (pg._id === editingId ? normalizeOwnerPg(data?.pg) : pg)));
       setEditingId("");
@@ -285,7 +293,7 @@ export function ManagePG() {
           const pgBookings = Array.isArray(bookingsByPg.get(pg._id)) ? bookingsByPg.get(pg._id) : [];
 
           return (
-          <SurfaceCard key={pg._id} className="space-y-6 p-8">
+            <SurfaceCard key={pg._id} className="space-y-6 p-8">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="text-sm font-semibold text-ink-500">PG listing</p>
@@ -302,8 +310,14 @@ export function ManagePG() {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <button type="button" className="btn-secondary" onClick={() => startEdit(pg)}><Pencil size={16} />Edit</button>
-                  <button type="button" className="btn-primary bg-rose-600 hover:bg-rose-700" onClick={() => deletePg(pg._id)}><Trash2 size={16} />Delete</button>
+                  <button type="button" className="btn-secondary" onClick={() => startEdit(pg)}>
+                    <Pencil size={16} />
+                    Edit
+                  </button>
+                  <button type="button" className="btn-primary bg-rose-600 hover:bg-rose-700" onClick={() => deletePg(pg._id)}>
+                    <Trash2 size={16} />
+                    Delete
+                  </button>
                 </div>
               </div>
 
@@ -316,11 +330,21 @@ export function ManagePG() {
               {editingId === pg._id ? (
                 <div className="space-y-5 rounded-xl bg-ink-50 p-6">
                   <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                    <FormField label="Title"><TextInput name="title" value={editForm.title} onChange={handleEditChange} /></FormField>
-                    <FormField label="Price"><TextInput name="price" type="number" value={editForm.price} onChange={handleEditChange} /></FormField>
-                    <FormField label="Location"><TextInput name="location" value={editForm.location} onChange={handleEditChange} /></FormField>
-                    <FormField label="City"><TextInput name="city" value={editForm.city} onChange={handleEditChange} /></FormField>
-                    <FormField label="Address"><TextInput name="address" value={editForm.address} onChange={handleEditChange} /></FormField>
+                    <FormField label="Title">
+                      <TextInput name="title" value={editForm.title} onChange={handleEditChange} />
+                    </FormField>
+                    <FormField label="Price">
+                      <TextInput name="price" type="number" value={editForm.price} onChange={handleEditChange} />
+                    </FormField>
+                    <FormField label="Location">
+                      <TextInput name="location" value={editForm.location} onChange={handleEditChange} />
+                    </FormField>
+                    <FormField label="City">
+                      <TextInput name="city" value={editForm.city} onChange={handleEditChange} />
+                    </FormField>
+                    <FormField label="Address">
+                      <TextInput name="address" value={editForm.address} onChange={handleEditChange} />
+                    </FormField>
                     <FormField label="Gender">
                       <SelectInput name="gender" value={editForm.gender} onChange={handleEditChange}>
                         <option value="unisex">Unisex</option>
@@ -335,11 +359,29 @@ export function ManagePG() {
                         <option value="shared">Shared</option>
                       </SelectInput>
                     </FormField>
-                    <FormField label="Total Rooms"><TextInput name="totalRooms" type="number" value={editForm.totalRooms} onChange={handleEditChange} /></FormField>
-                    <FormField label="Available Rooms"><TextInput name="availableRooms" type="number" value={editForm.availableRooms} onChange={handleEditChange} /></FormField>
+                    <FormField label="Total Rooms">
+                      <TextInput name="totalRooms" type="number" value={editForm.totalRooms} onChange={handleEditChange} />
+                    </FormField>
+                    <FormField label="Available Rooms">
+                      <TextInput
+                        name="availableRooms"
+                        type="number"
+                        value={editForm.availableRooms}
+                        onChange={handleEditChange}
+                      />
+                    </FormField>
                   </div>
-                  <FormField label="Description"><TextArea name="description" rows="3" value={editForm.description} onChange={handleEditChange} /></FormField>
-                  <FormField label="Amenities"><TextInput name="amenities" value={editForm.amenities} onChange={handleEditChange} placeholder="Wi-Fi, Laundry, Meals" /></FormField>
+                  <FormField label="Description">
+                    <TextArea name="description" rows="3" value={editForm.description} onChange={handleEditChange} />
+                  </FormField>
+                  <FormField label="Amenities">
+                    <TextInput
+                      name="amenities"
+                      value={editForm.amenities}
+                      onChange={handleEditChange}
+                      placeholder="Wi-Fi, Laundry, Meals"
+                    />
+                  </FormField>
                   <label className="flex cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-ink-300 bg-white px-6 py-6 text-sm font-medium text-ink-600">
                     <ImagePlus size={18} />
                     Replace images
@@ -348,13 +390,22 @@ export function ManagePG() {
                   {toArray(editForm.images).length > 0 ? (
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                       {toArray(editForm.images).map((image, index) => (
-                        <img key={`${index}-${String(image).slice(0, 32)}`} src={image} alt={`Preview ${index + 1}`} className="h-40 w-full rounded-xl object-cover" />
+                        <img
+                          key={`${index}-${String(image).slice(0, 32)}`}
+                          src={image}
+                          alt={`Preview ${index + 1}`}
+                          className="h-28 w-full rounded-xl object-cover sm:h-32 xl:h-36"
+                        />
                       ))}
                     </div>
                   ) : null}
                   <div className="flex flex-wrap gap-3">
-                    <button type="button" className="btn-primary" onClick={saveEdit}>Save Changes</button>
-                    <button type="button" className="btn-secondary" onClick={() => setEditingId("")}>Cancel</button>
+                    <button type="button" className="btn-primary" onClick={saveEdit}>
+                      Save Changes
+                    </button>
+                    <button type="button" className="btn-secondary" onClick={() => setEditingId("")}>
+                      Cancel
+                    </button>
                   </div>
                 </div>
               ) : null}
@@ -397,7 +448,7 @@ export function ManagePG() {
                   )}
                 </div>
               </div>
-          </SurfaceCard>
+            </SurfaceCard>
           );
         })}
       </div>

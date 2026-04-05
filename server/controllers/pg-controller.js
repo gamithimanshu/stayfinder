@@ -4,9 +4,7 @@ const Review = require("../models/review-model");
 const User = require("../models/user-models");
 const Contact = require("../models/contact-model");
 
-const resolvePublicPgFilter = async () => {
-  return { isApproved: true };
-};
+const resolvePublicPgFilter = async () => ({ isApproved: true });
 
 const buildReviewStatsMap = async (pgIds = []) => {
   const safePgIds = Array.isArray(pgIds) ? pgIds.filter(Boolean) : [];
@@ -57,7 +55,6 @@ const listAllPgs = async (req, res, next) => {
     }
 
     if (gender.trim()) {
-      // Use regex for flexible matching (male/Male/Boys etc)
       query.gender = { $regex: `^${gender.trim()}`, $options: "i" };
     }
 
@@ -68,7 +65,10 @@ const listAllPgs = async (req, res, next) => {
       }
     }
 
-    const pgs = await Pg.find(query).sort({ createdAt: -1 }).populate("ownerId", "username name email phone").lean();
+    const pgs = await Pg.find(query)
+      .sort({ createdAt: -1 })
+      .populate("ownerId", "username name email phone")
+      .lean();
     const reviewStatsByPgId = await buildReviewStatsMap(pgs.map((pg) => pg._id));
 
     const pgsWithStats = pgs.map((pg) => {
@@ -170,6 +170,7 @@ const getPgById = async (req, res, next) => {
   try {
     const publicFilter = await resolvePublicPgFilter();
     const pg = await Pg.findOne({ _id: req.params.id, ...publicFilter }).populate("ownerId", "username name email phone");
+
     if (!pg) {
       return res.status(404).json({ message: "PG not found" });
     }
@@ -192,26 +193,25 @@ const getPgById = async (req, res, next) => {
   }
 };
 
-// --- REVIEW LOGIC ---
 const addReview = async (req, res, next) => {
   try {
     const { pgId, rating, comment } = req.body;
-    const newReview = await Review.create({
+    await Review.create({
       pgId,
       userId: req.user._id,
       name: req.user.username || req.user.name,
       rating: Number(rating),
-      comment
+      comment,
     });
 
     const allReviews = await Review.find({ pgId }).sort({ createdAt: -1 });
+
     return res.status(201).json({ message: "Review added", reviews: allReviews });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
-// --- ADMIN LOGIC ---
 const getAdminDashboard = async (req, res, next) => {
   try {
     const [totalUsers, totalMessages, pendingPgs, approvedPgs, recentPendingPgs, recentMessages] = await Promise.all([
@@ -220,72 +220,80 @@ const getAdminDashboard = async (req, res, next) => {
       Pg.countDocuments({ isApproved: false }),
       Pg.countDocuments({ isApproved: true }),
       Pg.find({ isApproved: false }).sort({ createdAt: -1 }).limit(5).populate("ownerId", "username name"),
-      Contact.find().sort({ createdAt: -1 }).limit(5)
+      Contact.find().sort({ createdAt: -1 }).limit(5),
     ]);
 
-    res.status(200).json({
+    return res.status(200).json({
       stats: { totalUsers, totalMessages, pendingPgs, approvedPgs },
       recentPendingPgs,
-      recentMessages
+      recentMessages,
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
 const getPendingPgs = async (req, res, next) => {
   try {
     const pgs = await Pg.find({ isApproved: false }).populate("ownerId", "username name email phone");
-    res.status(200).json({ pgs });
+
+    return res.status(200).json({ pgs });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
 const approvePg = async (req, res, next) => {
   try {
     await Pg.findByIdAndUpdate(req.params.id, { isApproved: true });
-    res.status(200).json({ message: "PG Approved successfully" });
+
+    return res.status(200).json({ message: "PG Approved successfully" });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
-// --- OWNER LOGIC ---
 const getOwnerDashboard = async (req, res, next) => {
   try {
     const ownerId = req.user._id;
     const [pgs, bookings] = await Promise.all([
       Pg.find({ ownerId }),
       Booking.find().populate({
-        path: 'pgId',
-        match: { ownerId }
-      }).populate("userId", "username email phone")
+        path: "pgId",
+        match: { ownerId },
+      }).populate("userId", "username email phone"),
     ]);
 
-    const ownerBookings = bookings.filter(b => b.pgId !== null);
+    const ownerBookings = bookings.filter((booking) => booking.pgId !== null);
 
-    res.status(200).json({
+    return res.status(200).json({
       stats: {
         totalPgs: pgs.length,
         totalBookings: ownerBookings.length,
-        totalAvailableRooms: pgs.reduce((sum, p) => sum + p.availableRooms, 0),
-        pendingPgs: pgs.filter(p => !p.isApproved).length,
-        approvedPgs: pgs.filter(p => p.isApproved).length
+        totalAvailableRooms: pgs.reduce((sum, pg) => sum + pg.availableRooms, 0),
+        pendingPgs: pgs.filter((pg) => !pg.isApproved).length,
+        approvedPgs: pgs.filter((pg) => pg.isApproved).length,
       },
       recentPgs: pgs.slice(0, 5),
-      recentBookings: ownerBookings.slice(0, 5).map(b => ({
-        ...b.toObject(),
-        user: b.userId,
-        pg: b.pgId
-      }))
+      recentBookings: ownerBookings.slice(0, 5).map((booking) => ({
+        ...booking.toObject(),
+        user: booking.userId,
+        pg: booking.pgId,
+      })),
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
-module.exports = { 
-  listAllPgs, getPublicPgStats, reverseGeocode, getPgById, 
-  addReview, getAdminDashboard, getPendingPgs, approvePg, getOwnerDashboard 
+module.exports = {
+  listAllPgs,
+  getPublicPgStats,
+  reverseGeocode,
+  getPgById,
+  addReview,
+  getAdminDashboard,
+  getPendingPgs,
+  approvePg,
+  getOwnerDashboard,
 };

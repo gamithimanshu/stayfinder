@@ -207,7 +207,7 @@ export function AdminDashboard() {
         ))}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-2">
         <TrendChartCard
           title="Monthly Revenue"
           subtitle="Collected revenue over the last 6 months"
@@ -238,7 +238,7 @@ export function AdminDashboard() {
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
         <SurfaceCard className="rounded-xl border border-black/5 bg-white/90 p-6 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -278,7 +278,7 @@ export function AdminDashboard() {
           </div>
         </SurfaceCard>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <SurfaceCard className="rounded-xl border border-black/5 bg-white/90 p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -347,8 +347,8 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="max-w-full overflow-x-auto">
+          <table className="min-w-[760px] w-full text-sm">
             <thead className="bg-slate-100 text-left text-xs uppercase tracking-[0.18em] text-slate-500">
               <tr>
                 <th className="px-6 py-4 sm:px-8">Resident</th>

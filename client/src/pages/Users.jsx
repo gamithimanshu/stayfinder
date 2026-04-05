@@ -8,6 +8,26 @@ import { InfoBanner, SurfaceCard } from "../components/ui.jsx";
 
 const toArray = (value) => (Array.isArray(value) ? value : []);
 
+const getRoleBadgeClassName = (role) =>
+  role === "owner" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700";
+
+const dashboardStats = (nonAdminUsers, messages) => [
+  { label: "Registered Users", value: nonAdminUsers.length, accent: "bg-sky-100 text-sky-600", icon: Users2 },
+  {
+    label: "Owners",
+    value: nonAdminUsers.filter((item) => item.role === "owner").length,
+    accent: "bg-indigo-100 text-indigo-600",
+    icon: ShieldCheck,
+  },
+  {
+    label: "Residents",
+    value: nonAdminUsers.filter((item) => item.role === "user").length,
+    accent: "bg-emerald-100 text-emerald-600",
+    icon: UserRound,
+  },
+  { label: "Messages", value: messages.length, accent: "bg-amber-100 text-amber-600", icon: MessageSquareText },
+];
+
 export function Users() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -150,8 +170,8 @@ export function Users() {
     >
       <div className="space-y-8">
         <div className="rounded-xl bg-gradient-to-br from-slate-50 via-indigo-50 to-sky-100 p-6 shadow-[0_32px_90px_-48px_rgba(30,41,59,0.38)] sm:p-8 lg:p-10">
-          <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div>
+          <div className="mb-8 flex min-w-0 flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-indigo-600">Admin users</p>
               <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-800" style={{ fontFamily: "var(--font-display)" }}>
                 Platform Control Center
@@ -161,7 +181,7 @@ export function Users() {
               </p>
             </div>
 
-            <label className="relative block">
+            <label className="relative block w-full lg:max-w-md">
               <Search className="pointer-events-none absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
               <input
                 type="text"
@@ -176,12 +196,7 @@ export function Users() {
           {message ? <InfoBanner tone={messageType === "error" ? "error" : "success"} className="mb-6">{message}</InfoBanner> : null}
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {[
-              { label: "Registered Users", value: nonAdminUsers.length, accent: "bg-sky-100 text-sky-600", icon: Users2 },
-              { label: "Owners", value: nonAdminUsers.filter((item) => item.role === "owner").length, accent: "bg-indigo-100 text-indigo-600", icon: ShieldCheck },
-              { label: "Residents", value: nonAdminUsers.filter((item) => item.role === "user").length, accent: "bg-emerald-100 text-emerald-600", icon: UserRound },
-              { label: "Messages", value: messages.length, accent: "bg-amber-100 text-amber-600", icon: MessageSquareText },
-            ].map(({ label, value, accent, icon }) => (
+            {dashboardStats(nonAdminUsers, messages).map(({ label, value, accent, icon }) => (
               <div key={label} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -197,7 +212,7 @@ export function Users() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-xl">
+        <div className="min-w-0 overflow-hidden rounded-xl border border-slate-100 bg-white shadow-xl">
           <div className="flex flex-col gap-3 border-b bg-slate-50 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
             <div>
               <p className="text-sm font-medium text-slate-600">User management</p>
@@ -205,8 +220,8 @@ export function Users() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full table-fixed text-sm">
+          <div className="max-w-full overflow-x-auto">
+            <table className="min-w-[760px] w-full table-fixed text-sm">
               <thead className="bg-slate-100 text-left text-xs uppercase tracking-[0.18em] text-slate-500">
                 <tr>
                   <th className="px-6 py-4 sm:px-8">User</th>
@@ -240,11 +255,7 @@ export function Users() {
                       <td className="break-words px-6 py-5 text-slate-600 sm:px-8">{item.email || "No email"}</td>
                       <td className="break-words px-6 py-5 text-slate-600 sm:px-8">{item.phone || "No phone"}</td>
                       <td className="px-6 py-5 sm:px-8">
-                        <span className={`inline-flex rounded-xl px-3 py-1 text-xs font-medium ${
-                          item.role === "owner"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-emerald-100 text-emerald-700"
-                        }`}>
+                        <span className={`inline-flex rounded-xl px-3 py-1 text-xs font-medium ${getRoleBadgeClassName(item.role)}`}>
                           {item.role || "user"}
                         </span>
                       </td>
@@ -266,7 +277,7 @@ export function Users() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-xl">
+        <div className="min-w-0 overflow-hidden rounded-xl border border-slate-100 bg-white shadow-xl">
           <div className="flex flex-col gap-3 border-b bg-slate-50 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
             <div>
               <p className="text-sm font-medium text-slate-600">Contact messages</p>
@@ -274,8 +285,8 @@ export function Users() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full table-fixed text-sm">
+          <div className="max-w-full overflow-x-auto">
+            <table className="min-w-[980px] w-full table-fixed text-sm">
               <thead className="bg-slate-100 text-left text-xs uppercase tracking-[0.18em] text-slate-500">
                 <tr>
                   <th className="w-[12%] px-6 py-4 sm:px-8">Sender</th>

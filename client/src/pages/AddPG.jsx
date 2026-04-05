@@ -10,6 +10,17 @@ import { FormField, InfoBanner, SelectInput, SurfaceCard, TextArea, TextInput } 
 const MotionForm = motion.form;
 const toArray = (value) => (Array.isArray(value) ? value : []);
 
+const buildCreatePayload = (formData, amenities) => ({
+  ...formData,
+  area: formData.location,
+  address: formData.address || formData.location,
+  totalRooms: Number(formData.totalRooms),
+  images: formData.images,
+  amenities,
+  price: Number(formData.price),
+  availableRooms: Number(formData.availableRooms),
+});
+
 const initialForm = {
   title: "",
   price: "",
@@ -60,7 +71,11 @@ export function AddPG() {
   }, [isOwner, location.pathname, navigate, token, user]);
 
   const amenities = useMemo(
-    () => String(formData.amenities || "").split(",").map((item) => item.trim()).filter(Boolean),
+    () =>
+      String(formData.amenities || "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
     [formData.amenities]
   );
 
@@ -99,16 +114,7 @@ export function AddPG() {
     setMessageTone("info");
 
     try {
-      const { data } = await API.post("/owner/pgs", {
-          ...formData,
-          area: formData.location,
-          address: formData.address || formData.location,
-          totalRooms: Number(formData.totalRooms),
-          images: formData.images,
-          amenities,
-          price: Number(formData.price),
-          availableRooms: Number(formData.availableRooms),
-      });
+      const { data } = await API.post("/owner/pgs", buildCreatePayload(formData, amenities));
 
       navigate("/owner/manage", {
         replace: true,
@@ -144,61 +150,112 @@ export function AddPG() {
         transition={{ duration: 0.45 }}
       >
         <SurfaceCard className="space-y-6 p-8">
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              <FormField label="Title"><TextInput name="title" value={formData.title} onChange={handleChange} required /></FormField>
-              <FormField label="Price"><TextInput name="price" type="number" min="0" value={formData.price} onChange={handleChange} required /></FormField>
-              <FormField label="Location"><TextInput name="location" value={formData.location} onChange={handleChange} required /></FormField>
-              <FormField label="City"><TextInput name="city" value={formData.city} onChange={handleChange} required /></FormField>
-              <FormField label="Address"><TextInput name="address" value={formData.address} onChange={handleChange} placeholder="Full address" required /></FormField>
-              <FormField label="Gender">
-                <SelectInput name="gender" value={formData.gender} onChange={handleChange}>
-                  <option value="unisex">Unisex</option>
-                  <option value="male">Boys</option>
-                  <option value="female">Girls</option>
-                </SelectInput>
-              </FormField>
-              <FormField label="Room Type">
-                <SelectInput name="roomType" value={formData.roomType} onChange={handleChange}>
-                  <option value="single">Single</option>
-                  <option value="double">Double</option>
-                  <option value="shared">Shared</option>
-                </SelectInput>
-              </FormField>
-              <FormField label="Total Rooms"><TextInput name="totalRooms" type="number" min="1" value={formData.totalRooms} onChange={handleChange} required /></FormField>
-              <FormField label="Available Rooms"><TextInput name="availableRooms" type="number" min="0" value={formData.availableRooms} onChange={handleChange} required /></FormField>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <FormField label="Title">
+              <TextInput name="title" value={formData.title} onChange={handleChange} required />
+            </FormField>
+            <FormField label="Price">
+              <TextInput name="price" type="number" min="0" value={formData.price} onChange={handleChange} required />
+            </FormField>
+            <FormField label="Location">
+              <TextInput name="location" value={formData.location} onChange={handleChange} required />
+            </FormField>
+            <FormField label="City">
+              <TextInput name="city" value={formData.city} onChange={handleChange} required />
+            </FormField>
+            <FormField label="Address">
+              <TextInput
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                placeholder="Full address"
+                required
+              />
+            </FormField>
+            <FormField label="Gender">
+              <SelectInput name="gender" value={formData.gender} onChange={handleChange}>
+                <option value="unisex">Unisex</option>
+                <option value="male">Boys</option>
+                <option value="female">Girls</option>
+              </SelectInput>
+            </FormField>
+            <FormField label="Room Type">
+              <SelectInput name="roomType" value={formData.roomType} onChange={handleChange}>
+                <option value="single">Single</option>
+                <option value="double">Double</option>
+                <option value="shared">Shared</option>
+              </SelectInput>
+            </FormField>
+            <FormField label="Total Rooms">
+              <TextInput
+                name="totalRooms"
+                type="number"
+                min="1"
+                value={formData.totalRooms}
+                onChange={handleChange}
+                required
+              />
+            </FormField>
+            <FormField label="Available Rooms">
+              <TextInput
+                name="availableRooms"
+                type="number"
+                min="0"
+                value={formData.availableRooms}
+                onChange={handleChange}
+                required
+              />
+            </FormField>
+          </div>
+
+          <FormField label="Description">
+            <TextArea name="description" value={formData.description} onChange={handleChange} rows="4" />
+          </FormField>
+          <FormField label="Amenities" hint="Comma separated">
+            <TextInput
+              name="amenities"
+              value={formData.amenities}
+              onChange={handleChange}
+              placeholder="Wi-Fi, Laundry, Meals"
+            />
+          </FormField>
+
+          <label className="flex cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-ink-300 bg-ink-50 px-6 py-8 text-sm font-medium text-ink-600">
+            <ImagePlus size={20} />
+            Upload images
+            <input type="file" accept="image/*" multiple onChange={handleImages} hidden />
+          </label>
+
+          {toArray(formData.images).length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {toArray(formData.images).map((image, index) => (
+                <img
+                  key={`${index}-${String(image).slice(0, 32)}`}
+                  src={image}
+                  alt={`Preview ${index + 1}`}
+                  className="h-28 w-full rounded-xl object-cover sm:h-32 xl:h-36"
+                />
+              ))}
             </div>
+          ) : null}
 
-            <FormField label="Description"><TextArea name="description" value={formData.description} onChange={handleChange} rows="4" /></FormField>
-            <FormField label="Amenities" hint="Comma separated"><TextInput name="amenities" value={formData.amenities} onChange={handleChange} placeholder="Wi-Fi, Laundry, Meals" /></FormField>
+          {amenities.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {amenities.map((item) => (
+                <span key={item} className="badge-soft">
+                  {item}
+                </span>
+              ))}
+            </div>
+          ) : null}
 
-            <label className="flex cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-ink-300 bg-ink-50 px-6 py-8 text-sm font-medium text-ink-600">
-              <ImagePlus size={20} />
-              Upload images
-              <input type="file" accept="image/*" multiple onChange={handleImages} hidden />
-            </label>
-
-            {toArray(formData.images).length > 0 ? (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {toArray(formData.images).map((image, index) => (
-                  <img key={`${index}-${String(image).slice(0, 32)}`} src={image} alt={`Preview ${index + 1}`} className="h-40 w-full rounded-xl object-cover" />
-                ))}
-              </div>
-            ) : null}
-
-            {amenities.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {amenities.map((item) => <span key={item} className="badge-soft">{item}</span>)}
-              </div>
-            ) : null}
-
-            <button type="submit" className="btn-primary w-full sm:w-auto" disabled={saving}>
-              <PlusCircle size={18} />
-              {saving ? "Saving..." : "Create PG"}
-            </button>
-          </SurfaceCard>
+          <button type="submit" className="btn-primary w-full sm:w-auto" disabled={saving}>
+            <PlusCircle size={18} />
+            {saving ? "Saving..." : "Create PG"}
+          </button>
+        </SurfaceCard>
       </MotionForm>
     </DashboardLayout>
   );
 }
-
 

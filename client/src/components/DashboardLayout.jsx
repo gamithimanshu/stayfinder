@@ -33,25 +33,25 @@ export function DashboardLayout({ role, kicker, title, description, actions, chi
   }
 
   return (
-    <section className="page-section pt-10 sm:pt-12">
+    <section className="page-section pt-6 sm:pt-8">
       <PageShell>
-        <div className="grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start">
-          <aside className="lg:sticky lg:top-24">
-            <div className="border border-brand-100 bg-white">
+        <div className="grid gap-6 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-8 lg:items-start">
+          <aside className="lg:sticky lg:top-[5.5rem] lg:self-start">
+            <div className="overflow-hidden border border-brand-100 bg-white/92 shadow-[0_18px_50px_-28px_rgba(30,25,18,0.2)] backdrop-blur-sm lg:min-h-[calc(100vh-7rem)]">
               <div className="border-b border-brand-100 px-5 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">{config.label}</p>
               </div>
-              <nav className="flex gap-2 overflow-x-auto p-3 lg:block lg:space-y-1 lg:overflow-visible">
+              <nav className="flex gap-2 overflow-x-auto p-3 lg:flex-col lg:gap-1 lg:overflow-visible lg:p-4">
                 {items.map(({ to, label, icon }) => (
                   <NavLink
                     key={to}
                     to={to}
                     className={({ isActive }) =>
                       cn(
-                        "flex min-w-fit items-center gap-3 whitespace-nowrap px-3 py-2.5 text-sm font-medium transition lg:w-full",
+                        "flex min-w-fit items-center gap-3 whitespace-nowrap border border-transparent px-3 py-3 text-sm font-medium transition lg:w-full",
                         isActive
-                          ? "bg-sky-50 text-sky-800"
-                          : "text-ink-600 hover:bg-ink-50 hover:text-ink-900"
+                          ? "border-sky-100 bg-sky-50 text-sky-800"
+                          : "text-ink-600 hover:border-ink-100 hover:bg-ink-50 hover:text-ink-900"
                       )
                     }
                   >
@@ -63,18 +63,18 @@ export function DashboardLayout({ role, kicker, title, description, actions, chi
             </div>
           </aside>
 
-          <div className="space-y-8">
-            <div className="flex flex-col gap-5 border-b border-brand-100 pb-7 md:flex-row md:items-end md:justify-between">
-              <div className="space-y-3">
+          <div className="min-w-0 space-y-8">
+            <div className="flex min-w-0 flex-col gap-5 border-b border-brand-100 pb-7 md:flex-row md:items-end md:justify-between">
+              <div className="min-w-0 space-y-3">
                 {kicker ? <p className="text-sm font-semibold text-sky-700">{kicker}</p> : null}
-                <div className="space-y-2">
+                <div className="min-w-0 space-y-2">
                   <h1 className="text-3xl tracking-tight text-ink-900 sm:text-[2.2rem]" style={{ fontFamily: "var(--font-display)" }}>
                     {title}
                   </h1>
                   {description ? <p className="max-w-3xl text-sm leading-7 text-ink-500 sm:text-[15px]">{description}</p> : null}
                 </div>
               </div>
-              {actions ? <div className="flex flex-wrap gap-3">{actions}</div> : null}
+              {actions ? <div className="flex min-w-0 flex-wrap gap-3 md:justify-end">{actions}</div> : null}
             </div>
 
             {children}

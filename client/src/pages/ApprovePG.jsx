@@ -103,7 +103,7 @@ export function ApprovePG() {
     >
       {message ? <InfoBanner tone={messageType === "error" ? "error" : "success"}>{message}</InfoBanner> : null}
 
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6">
         {safePgs.length === 0 ? (
           <SurfaceCard className="p-8">
             <h2 className="panel-title">No pending PG approvals</h2>
@@ -112,12 +112,12 @@ export function ApprovePG() {
         ) : null}
 
         {safePgs.map((pg) => (
-          <SurfaceCard key={pg._id} className="space-y-6 p-8">
+          <SurfaceCard key={pg._id} className="min-w-0 space-y-6 p-6 sm:p-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm font-semibold text-ink-500">Pending listing</p>
-                <h2 className="mt-1 text-2xl font-semibold text-ink-900">{pg.title}</h2>
-                <p className="mt-2 text-sm text-ink-500">{pg.location}</p>
+                <h2 className="mt-1 break-words text-2xl font-semibold text-ink-900">{pg.title}</h2>
+                <p className="mt-2 break-words text-sm text-ink-500">{pg.location}</p>
               </div>
               <button type="button" className="btn-primary" onClick={() => handleApprove(pg._id)}>
                 <CheckCircle2 size={18} />

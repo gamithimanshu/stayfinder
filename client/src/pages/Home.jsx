@@ -212,7 +212,7 @@ export const Home = () => {
     <div>
       <PageSection className="pt-6 sm:pt-10">
         <PageShell>
-          <section className="relative overflow-hidden rounded-xl border border-black/5 px-6 py-16 text-white shadow-[0_40px_90px_-45px_rgba(29,25,18,0.7)] sm:px-10 lg:px-14 lg:py-20">
+          <section className="relative overflow-hidden rounded-xl border border-black/5 px-5 py-10 text-white shadow-[0_40px_90px_-45px_rgba(29,25,18,0.7)] sm:px-10 sm:py-14 lg:px-14 lg:py-20">
             <div
               className="absolute inset-0 bg-cover bg-center"
               style={{ backgroundImage: 'url("/images/hero.png")' }}
@@ -226,12 +226,12 @@ export const Home = () => {
                 <span className="inline-flex rounded-xl border border-white/15 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-white/80">
                   Fresh, trusted city stays
                 </span>
-                <h1 className="mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl" style={{ fontFamily: "var(--font-display)" }}>
+                <h1 className="mt-5 max-w-3xl text-3xl font-bold tracking-tight sm:mt-6 sm:text-5xl lg:text-6xl" style={{ fontFamily: "var(--font-display)" }}>
                   Find Your Perfect
                   <br />
                   <span className="text-sky-300">PG & Hostel</span>
                 </h1>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-white/78 sm:text-lg">
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-white/78 sm:mt-5 sm:text-lg sm:leading-8">
                   StayFinder helps students and professionals discover verified stays with clear pricing, cleaner comparisons, and a smoother booking flow.
                 </p>
 

@@ -98,9 +98,9 @@ export function Booking() {
 
     try {
       const { data } = await API.post("/booking", {
-          pgId: pg.id,
-          checkInDate,
-          durationMonths: Number.parseInt(durationMonths, 10),
+        pgId: pg.id,
+        checkInDate,
+        durationMonths: Number.parseInt(durationMonths, 10),
       });
 
       setPg((current) => current ? { ...current, availableRooms: data?.pg?.availableRooms ?? current.availableRooms } : current);
@@ -124,12 +124,29 @@ export function Booking() {
   }
 
   if (loading) {
-    return <PageSection><PageShell><SurfaceCard className="p-10 text-center text-ink-500">Loading booking page...</SurfaceCard></PageShell></PageSection>;
+    return (
+      <PageSection>
+        <PageShell>
+          <SurfaceCard className="p-10 text-center text-ink-500">Loading booking page...</SurfaceCard>
+        </PageShell>
+      </PageSection>
+    );
   }
 
   if (!pg) {
     return (
-      <PageSection><PageShell><SurfaceCard className="space-y-4 p-10 text-center"><p>We could not load this PG for booking.</p><div><Link to="/listings" className="btn-secondary">Back to listings</Link></div></SurfaceCard></PageShell></PageSection>
+      <PageSection>
+        <PageShell>
+          <SurfaceCard className="space-y-4 p-10 text-center">
+            <p>We could not load this PG for booking.</p>
+            <div>
+              <Link to="/listings" className="btn-secondary">
+                Back to listings
+              </Link>
+            </div>
+          </SurfaceCard>
+        </PageShell>
+      </PageSection>
     );
   }
 
@@ -143,8 +160,8 @@ export function Booking() {
         </Link>
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <SurfaceCard className="overflow-hidden">
-            <SafeImage src={pg.image} alt={pg.title} className="h-72 w-full object-cover sm:h-96" />
-            <div className="space-y-4 p-8">
+            <SafeImage src={pg.image} alt={pg.title} className="h-56 w-full object-cover sm:h-72 lg:h-80" />
+            <div className="space-y-4 p-6 sm:p-8">
               <span className="section-kicker">Secure booking</span>
               <h1 className="text-4xl tracking-tight text-ink-900" style={{ fontFamily: "var(--font-display)" }}>
                 Review your stay details before moving to payment.
@@ -155,7 +172,10 @@ export function Booking() {
               <div className="rounded-xl border border-black/5 bg-sky-50/60 p-5">
                 <h2 className="text-xl font-semibold text-ink-900">{pg.title}</h2>
                 <p className="mt-2 text-sm text-ink-500">{pg.location}</p>
-                <p className="mt-4 text-2xl font-bold text-ink-900">Rs. {pg.price.toLocaleString()}<span className="text-sm font-medium text-ink-400"> /month</span></p>
+                <p className="mt-4 text-2xl font-bold text-ink-900">
+                  Rs. {pg.price.toLocaleString()}
+                  <span className="text-sm font-medium text-ink-400"> /month</span>
+                </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="rounded-xl border border-black/5 bg-white p-4">
@@ -185,7 +205,7 @@ export function Booking() {
           </SurfaceCard>
 
           <div className="xl:sticky xl:top-24 h-fit">
-            <SurfaceCard className="p-8">
+            <SurfaceCard className="p-6 sm:p-8">
               <form onSubmit={handleSubmit} className="space-y-5">
                 <FormField label="Check-in date">
                   <div className="relative">

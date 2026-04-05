@@ -45,7 +45,7 @@ const hasData = (chart) => {
 
 function EmptyChartState({ message = "No chart data available yet." }) {
   return (
-    <div className="flex h-[260px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center text-sm text-slate-500">
+    <div className="flex h-[220px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 text-center text-sm text-slate-500 sm:h-[260px]">
       <p className="max-w-xs">{message}</p>
     </div>
   );
@@ -53,7 +53,7 @@ function EmptyChartState({ message = "No chart data available yet." }) {
 
 function ChartCardShell({ title, subtitle, children, footer }) {
   return (
-    <SurfaceCard className="rounded-xl border border-black/5 bg-white/90 p-6 shadow-sm">
+    <SurfaceCard className="rounded-xl border border-black/5 bg-white/90 p-4 shadow-sm sm:p-6">
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-ink-700">{title}</p>
@@ -75,7 +75,7 @@ export function DonutChartCard({ title, subtitle, chart, valueFormatter = format
         <EmptyChartState message={emptyMessage} />
       ) : (
         <>
-          <div className="h-[260px] w-full">
+          <div className="h-[220px] w-full sm:h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Tooltip
@@ -125,7 +125,7 @@ export function MultiBarChartCard({ title, subtitle, chart, valueFormatter = for
       {!hasData(chart) ? (
         <EmptyChartState message={emptyMessage} />
       ) : (
-        <div className="h-[260px] w-full">
+        <div className="h-[220px] w-full sm:h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rows} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -162,7 +162,7 @@ export function TrendChartCard({ title, subtitle, chart, valueFormatter = format
       {!hasData(chart) ? (
         <EmptyChartState message={emptyMessage} />
       ) : (
-        <div className="h-[260px] w-full">
+        <div className="h-[220px] w-full sm:h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={rows} margin={{ top: 10, right: 8, left: -20, bottom: 0 }}>
               <defs>
@@ -193,6 +193,5 @@ export function TrendChartCard({ title, subtitle, chart, valueFormatter = format
     </ChartCardShell>
   );
 }
-
 
 

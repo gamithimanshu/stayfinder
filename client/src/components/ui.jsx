@@ -43,6 +43,8 @@ export function SafeImage({ src, fallbackSrc = FALLBACK_PG_IMAGE, onError, ...pr
     <img
       {...props}
       src={resolvedSrc}
+      loading={props.loading ?? "lazy"}
+      decoding={props.decoding ?? "async"}
       onError={(event) => {
         onError?.(event);
 
@@ -197,7 +199,7 @@ export function PropertyCard({
   return (
     <Link to={to} className="group block h-full">
       <article className="surface-card h-full overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_60px_-30px_rgba(30,25,18,0.45)]">
-        <div className="relative h-56 overflow-hidden bg-ink-100">
+        <div className="relative h-48 overflow-hidden bg-ink-100 sm:h-52 lg:h-56">
           <SafeImage
             src={listing.image || FALLBACK_PG_IMAGE}
             alt={listing.title}
@@ -207,12 +209,12 @@ export function PropertyCard({
           {badge ? <div className="absolute left-4 top-4">{badge}</div> : null}
           {overlay ? <div className="absolute bottom-4 left-4 right-4">{overlay}</div> : null}
         </div>
-        <div className="flex flex-1 flex-col gap-4 p-5">
+        <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
           <div className="space-y-2">
-            <h3 className="text-[1.35rem] leading-tight text-ink-900" style={{ fontFamily: "var(--font-display)" }}>{listing.title}</h3>
+            <h3 className="line-clamp-2 text-[1.2rem] leading-tight text-ink-900 sm:text-[1.35rem]" style={{ fontFamily: "var(--font-display)" }}>{listing.title}</h3>
             <p className="text-sm text-ink-500">{listing.location}</p>
           </div>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xl font-semibold text-ink-900">
               Rs. {Number(listing.price || 0).toLocaleString()}
               <span className="ml-1 text-sm font-medium text-ink-400">/month</span>

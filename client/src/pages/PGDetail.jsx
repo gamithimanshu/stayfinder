@@ -193,10 +193,10 @@ export function PGDetail() {
                 <SafeImage
                   src={selectedImage || pg.image}
                   alt={pg.title}
-                  className="h-[22rem] w-full object-cover sm:h-[32rem]"
+                  className="h-64 w-full object-cover sm:h-[24rem] lg:h-[28rem]"
                 />
               </SurfaceCard>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {galleryImages.map((image) => (
                   <button
                     key={image}
@@ -205,14 +205,14 @@ export function PGDetail() {
                     onClick={() => setSelectedImage(image)}
                     aria-label={`View image for ${pg.title}`}
                   >
-                    <SafeImage src={image} alt={pg.title} className="h-28 w-full object-cover" />
+                    <SafeImage src={image} alt={pg.title} className="h-20 w-full object-cover sm:h-24" />
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="xl:sticky xl:top-24 h-fit">
-              <SurfaceCard className="p-8">
+              <SurfaceCard className="p-6 sm:p-8">
                 <span className="section-kicker">Verified PG detail</span>
                 <h1 className="mt-5 text-4xl font-black tracking-tight text-ink-900" style={{ fontFamily: "var(--font-display)" }}>
                   {pg.title}
